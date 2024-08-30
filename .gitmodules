@@ -1,0 +1,6 @@
+[submodule "models"]
+	path = models
+	url = git@github.com:manuel-suarez/deep-learning-models-pt.git
+[submodule "datasets"]
+	path = datasets
+	url = git@github.com:manuel-suarez/deep-learning-datasets-pt.git
