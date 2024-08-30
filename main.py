@@ -2,14 +2,10 @@ import os
 import time
 import torch
 import argparse
-import pandas as pd
-from torch.cuda import is_available
+import numpy as np
 
-from data import CimatDataset
 from dataloaders import prepare_dataloaders
-from tqdm import tqdm
 from torch import nn, optim
-from torch.utils.data import DataLoader
 from models.unet_resnet34 import UnetResNet34
 
 
@@ -36,8 +32,8 @@ def test_step(model, loss_fn, test_loader, device):
             y_true.extend(labels.cpu().detach().numpy())
 
     # Conver lists to tensors for calculation
-    y_true_tensor = torch.tensor(y_true)
-    y_pred_tensor = torch.tensor(y_pred)
+    y_true_tensor = torch.tensor(np.array(y_true))
+    y_pred_tensor = torch.tensor(np.array(y_pred))
 
     # Metrics
     TP = ((y_pred_tensor == 1) & (y_true_tensor == 1)).sum().item()
@@ -54,7 +50,7 @@ def test_step(model, loss_fn, test_loader, device):
         else 0
     )
     return {
-        "loss": total_loss,
+        "loss": total_loss / len(test_loader),
         "accuracy": accuracy,
         "precision": precision,
         "recall": recall,
@@ -85,8 +81,8 @@ def valid_step(model, loss_fn, valid_loader, device):
             y_true.extend(labels.cpu().detach().numpy())
 
     # Conver lists to tensors for calculation
-    y_true_tensor = torch.tensor(y_true)
-    y_pred_tensor = torch.tensor(y_pred)
+    y_true_tensor = torch.tensor(np.array(y_true))
+    y_pred_tensor = torch.tensor(np.array(y_pred))
 
     # Metrics
     TP = ((y_pred_tensor == 1) & (y_true_tensor == 1)).sum().item()
@@ -103,7 +99,7 @@ def valid_step(model, loss_fn, valid_loader, device):
         else 0
     )
     return {
-        "loss": total_loss,
+        "loss": total_loss / len(valid_loader),
         "accuracy": accuracy,
         "precision": precision,
         "recall": recall,
@@ -138,8 +134,8 @@ def train_step(model, loss_fn, train_loader, device):
         optimizer.step()
 
     # Conver lists to tensors for calculation
-    y_true_tensor = torch.tensor(y_true)
-    y_pred_tensor = torch.tensor(y_pred)
+    y_true_tensor = torch.tensor(np.array(y_true))
+    y_pred_tensor = torch.tensor(np.array(y_pred))
 
     # Metrics
     TP = ((y_pred_tensor == 1) & (y_true_tensor == 1)).sum().item()
@@ -156,7 +152,7 @@ def train_step(model, loss_fn, train_loader, device):
         else 0
     )
     return {
-        "loss": total_loss,
+        "loss": total_loss / len(train_loader),
         "accuracy": accuracy,
         "precision": precision,
         "recall": recall,
@@ -224,9 +220,10 @@ if __name__ == "__main__":
     # Training and Validation
     print("[INFO] training the network...")
     startTime = time.time()
-    for epoch in range(args.num_epochs):
+    num_epochs = int(args.num_epochs)
+    for epoch in range(num_epochs):
         train_epoch(
-            epoch, args.num_epochs, model, loss_fn, train_loader, valid_loader, device
+            epoch, num_epochs, model, loss_fn, train_loader, valid_loader, device
         )
 
     # display total time
