@@ -179,6 +179,7 @@ def train_epoch(epoch, epochs, model, loss_fn, train_loader, valid_loader, devic
 if __name__ == "__main__":
     # Load command arguments
     parser = argparse.ArgumentParser()
+    parser.add_argument("dataset")
     parser.add_argument("results_path")
     parser.add_argument("num_epochs")
     args = parser.parse_args()
@@ -192,10 +193,8 @@ if __name__ == "__main__":
     print(f"SLURM_ARRAY_TASK_ID: {slurm_array_task_id}")
     print(f"SLURM_JOB_NODELIST: {slurm_node_list}")
 
-    train_file = "{:02}".format(slurm_array_task_id)
-    cross_file = "{:02}".format(slurm_array_task_id)
-    print(f"Train file: {train_file}")
-    print(f"Cross file: {cross_file}")
+    trainset = "{:02}".format(slurm_array_task_id)
+    print(f"Trainset: {trainset}")
 
     # Check if results path exists
     if not os.path.exists(args.results_path):
@@ -206,7 +205,10 @@ if __name__ == "__main__":
     feat_channels = ["ORIGIN", "ORIGIN", "VAR"]
     # Dataloaders
     train_loader, valid_loader, test_loader = prepare_dataloaders(
-        home_dir, feat_channels, train_file, cross_file
+        base_dir=home_dir,
+        dataset=args.dataset,
+        trainset=trainset,
+        feat_channels=feat_channels,
     )
 
     # Check device
