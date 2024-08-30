@@ -3,7 +3,7 @@ import time
 import argparse
 import lightning as L
 
-from dataloaders import prepare_dataloaders
+from sos_dataloaders import prepare_dataloaders
 from torch import nn, optim
 from models.unet_resnet34 import UnetResNet34
 from module import CimatModule
@@ -12,7 +12,6 @@ from lightning.pytorch.loggers import CSVLogger
 if __name__ == "__main__":
     # Load command arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("dataset")
     parser.add_argument("results_path")
     parser.add_argument("num_epochs")
     args = parser.parse_args()
@@ -34,21 +33,16 @@ if __name__ == "__main__":
         os.makedirs(args.results_path, exist_ok=True)
     # Configure directories
     home_dir = os.path.expanduser("~")
-    # Features to use
-    feat_channels = ["ORIGIN", "ORIGIN", "VAR"]
     # Dataloaders
     train_dataloader, valid_dataloader, test_dataloader = prepare_dataloaders(
         base_dir=home_dir,
-        dataset=args.dataset,
-        trainset=trainset,
-        feat_channels=feat_channels,
     )
 
     # Load and configure model (segmentation_models_pytorch)
-    model = UnetResNet34()
+    model = UnetResNet34(in_channels=1)
     loss_fn = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
-    logger = CSVLogger(os.path.join(f"logs_dataset{trainset}"), name="results.csv")
+    logger = CSVLogger(os.path.join(f"logs_sos_dataset"), name="results.csv")
     module = CimatModule(model, optimizer, loss_fn)
     trainer = L.Trainer(
         max_epochs=int(args.num_epochs), devices=1, accelerator="gpu", logger=logger
