@@ -1,42 +1,82 @@
 import lightning as L
+import torch
 import torchmetrics
+import torch.nn.functional as F
 from torch import optim, nn, utils, Tensor
 
 
 class CimatModule(L.LightningModule):
-    def __init__(self, model, optimizer, loss_fn):
+    def __init__(self, model, optimizer, loss_fn, metrics_mode="binary", num_classes=1):
         super().__init__()
         self.model = model
         self.optimizer = optimizer
         self.loss_fn = loss_fn
         # Training metrics
-        self.train_sensitivity = torchmetrics.Recall("binary")
-        self.train_specificity = torchmetrics.Specificity("binary")
-        self.train_accuracy = torchmetrics.Accuracy("binary")
-        self.train_f1score = torchmetrics.F1Score("binary")
-        self.train_meaniou = torchmetrics.JaccardIndex(task="binary")
+        self.train_sensitivity = torchmetrics.Recall(
+            task=metrics_mode, num_classes=num_classes
+        )
+        self.train_specificity = torchmetrics.Specificity(
+            task=metrics_mode, num_classes=num_classes
+        )
+        self.train_accuracy = torchmetrics.Accuracy(
+            task=metrics_mode, num_classes=num_classes
+        )
+        self.train_f1score = torchmetrics.F1Score(
+            task=metrics_mode, num_classes=num_classes
+        )
+        self.train_meaniou = torchmetrics.JaccardIndex(
+            task=metrics_mode, num_classes=num_classes
+        )
         # Validation metrics
-        self.valid_sensitivity = torchmetrics.Recall("binary")
-        self.valid_specificity = torchmetrics.Specificity("binary")
-        self.valid_accuracy = torchmetrics.Accuracy("binary")
-        self.valid_f1score = torchmetrics.F1Score("binary")
-        self.valid_meaniou = torchmetrics.JaccardIndex(task="binary")
+        self.valid_sensitivity = torchmetrics.Recall(
+            task=metrics_mode, num_classes=num_classes
+        )
+        self.valid_specificity = torchmetrics.Specificity(
+            task=metrics_mode, num_classes=num_classes
+        )
+        self.valid_accuracy = torchmetrics.Accuracy(
+            task=metrics_mode, num_classes=num_classes
+        )
+        self.valid_f1score = torchmetrics.F1Score(
+            task=metrics_mode, num_classes=num_classes
+        )
+        self.valid_meaniou = torchmetrics.JaccardIndex(
+            task=metrics_mode, num_classes=num_classes
+        )
         # Test metrics
-        self.test_sensitivity = torchmetrics.Recall("binary")
-        self.test_specificity = torchmetrics.Specificity("binary")
-        self.test_accuracy = torchmetrics.Accuracy("binary")
-        self.test_f1score = torchmetrics.F1Score("binary")
-        self.test_meaniou = torchmetrics.JaccardIndex(task="binary")
+        self.test_sensitivity = torchmetrics.Recall(
+            task=metrics_mode, num_classes=num_classes
+        )
+        self.test_specificity = torchmetrics.Specificity(
+            task=metrics_mode, num_classes=num_classes
+        )
+        self.test_accuracy = torchmetrics.Accuracy(
+            task=metrics_mode, num_classes=num_classes
+        )
+        self.test_f1score = torchmetrics.F1Score(
+            task=metrics_mode, num_classes=num_classes
+        )
+        self.test_meaniou = torchmetrics.JaccardIndex(
+            task=metrics_mode, num_classes=num_classes
+        )
 
     def training_step(self, batch, batch_idx):
         inputs, labels = batch
-        preds = self.model(inputs)
-        train_loss = self.loss_fn(preds, labels)
-        self.train_sensitivity(preds, labels)
-        self.train_specificity(preds, labels)
-        self.train_accuracy(preds, labels)
-        self.train_f1score(preds, labels)
-        self.train_meaniou(preds, labels)
+        # print("\n -= TRAINING =-\n")
+        # print("Inputs: ", inputs.shape, labels.shape)
+        # print("Types: ", inputs.type(), labels.type())
+        outputs = self.model(inputs)
+        # print("Outputs: ", outputs.shape)
+        # print("Type: ", outputs.type())
+        # preds = torch.argmax(outputs, dim=1)
+        # print("Predictions: ", preds.shape)
+        # print("Type: ", preds.type())
+        train_loss = self.loss_fn(outputs, labels)
+        self.train_sensitivity(outputs, labels)
+        self.train_specificity(outputs, labels)
+        self.train_accuracy(outputs, labels)
+        self.train_f1score(outputs, labels)
+        self.train_meaniou(outputs, labels)
         self.log_dict(
             {
                 "train_loss": train_loss,
@@ -55,13 +95,22 @@ class CimatModule(L.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         inputs, labels = batch
-        preds = self.model(inputs)
-        valid_loss = self.loss_fn(preds, labels)
-        self.valid_sensitivity(preds, labels)
-        self.valid_specificity(preds, labels)
-        self.valid_accuracy(preds, labels)
-        self.valid_f1score(preds, labels)
-        self.valid_meaniou(preds, labels)
+        # print("\n -= VALIDATION =-\n")
+        # print("Inputs: ", inputs.shape, labels.shape)
+        # print("Types: ", inputs.type(), labels.type())
+        outputs = self.model(inputs)
+        # print("Outputs: ", outputs.shape)
+        # print("Type: ", outputs.type())
+        # preds = torch.argmax(outputs, dim=1)
+        # #print("Predictions: ", preds.shape)
+        # #print("Type: ", preds.type())
+        # valid_loss = self.loss_fn(outputs, labels)
+        valid_loss = F.cross_entropy(outputs, labels, reduction="mean")
+        self.valid_sensitivity(outputs, labels)
+        self.valid_specificity(outputs, labels)
+        self.valid_accuracy(outputs, labels)
+        self.valid_f1score(outputs, labels)
+        self.valid_meaniou(outputs, labels)
         self.log_dict(
             {
                 "valid_loss": valid_loss,
@@ -80,13 +129,13 @@ class CimatModule(L.LightningModule):
 
     def test_step(self, batch, batch_idx):
         inputs, labels = batch
-        preds = self.model(inputs)
-        test_loss = self.loss_fn(preds, labels)
-        self.test_sensitivity(preds, labels)
-        self.test_specificity(preds, labels)
-        self.test_accuracy(preds, labels)
-        self.test_f1score(preds, labels)
-        self.test_meaniou(preds, labels)
+        outputs = self.model(inputs)
+        test_loss = self.loss_fn(outputs, labels)
+        self.test_sensitivity(outputs, labels)
+        self.test_specificity(outputs, labels)
+        self.test_accuracy(outputs, labels)
+        self.test_f1score(outputs, labels)
+        self.test_meaniou(outputs, labels)
         self.log_dict(
             {
                 "test_loss": test_loss,
