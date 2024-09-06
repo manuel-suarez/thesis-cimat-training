@@ -1,5 +1,6 @@
 import os
 import time
+import torch
 import argparse
 import lightning as L
 
@@ -58,6 +59,7 @@ if __name__ == "__main__":
     )
     # display total time
     endTime = time.time()
+    trainer.save_checkpoint("chn6-best_model.ckpt")
     print(
         "[INFO] total time taken to train the model: {:.2f}s".format(
             endTime - startTime
@@ -71,3 +73,36 @@ if __name__ == "__main__":
     print(
         "[INFO] total time taken to test the model: {:.2f}s".format(endTime - startTime)
     )
+
+    from matplotlib import pyplot as plt
+
+    # Test example segmentations
+    results_dir = os.path.join("results", "chn6_dataset", "figures")
+    os.makedirs(results_dir, exist_ok=True)
+    checkpoint = torch.load("chn6-best_model.ckpt")
+    print(checkpoint.keys())
+    model.eval()
+    for directory, loader in zip(
+        ["train", "valid", "test"],
+        [train_dataloader, valid_dataloader, test_dataloader],
+    ):
+        figures_dir = os.path.join(results_dir, directory)
+        os.makedirs(figures_dir, exist_ok=True)
+        for images, labels in loader:
+            predictions = model(images)
+            print("Images shape: ", images.shape)
+            print("Labels shape: ", labels.shape)
+            print("Preds shape: ", predictions.shape)
+
+            images, labels, predictions = (
+                images.detach().numpy(),
+                labels.detach().numpy(),
+                predictions.detach().numpy(),
+            )
+
+            fig, axs = plt.subplots(1, 3, figsize=(12, 8))
+            axs[0].imshow(images[0, 0, :, :])
+            axs[1].imshow(predictions[0, 0, :, :])
+            axs[2].imshow(labels[0, 0, :, :])
+            plt.savefig(os.path.join(figures_dir, "result.png"))
+            plt.close()
