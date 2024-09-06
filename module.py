@@ -105,7 +105,7 @@ class CimatModule(L.LightningModule):
         # #print("Predictions: ", preds.shape)
         # #print("Type: ", preds.type())
         # valid_loss = self.loss_fn(outputs, labels)
-        valid_loss = F.cross_entropy(outputs, labels, reduction="mean")
+        valid_loss = self.loss_fn(outputs, labels)
         self.valid_sensitivity(outputs, labels)
         self.valid_specificity(outputs, labels)
         self.valid_accuracy(outputs, labels)
