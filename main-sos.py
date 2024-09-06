@@ -57,6 +57,7 @@ if __name__ == "__main__":
     )
     # display total time
     endTime = time.time()
+    trainer.save_checkpoint("sos-best_model.ckpt")
     print(
         "[INFO] total time taken to train the model: {:.2f}s".format(
             endTime - startTime
@@ -70,3 +71,27 @@ if __name__ == "__main__":
     print(
         "[INFO] total time taken to test the model: {:.2f}s".format(endTime - startTime)
     )
+
+    from matplotlib import pyplot as plt
+
+    # Test example segmentations
+    results_dir = os.path.join(
+        "results", f"cimat_dataset{args.dataset}_trainset{trainset}", "figures"
+    )
+    os.makedirs(results_dir, exist_ok=True)
+    model = CimatModule.load_from_checkpoint("sos-best_model.ckpt")
+    model.eval()
+    for directory, loader in zip(
+        ["train", "valid", "test"],
+        [train_dataloader, valid_dataloader, test_dataloader],
+    ):
+        figures_dir = os.path.join(results_dir, directory)
+        os.makedirs(figures_dir, exist_ok=True)
+        for images, labels in loader:
+            predictions = model(images)
+
+            fig, axs = plt.subplots(1, 3, figsize=(12, 8))
+            axs[0].imshow(images)
+            axs[1].imshow(predictions)
+            axs[2].imshow(labels)
+            plt.savefig(os.path.join(figures_dir, "result.png"))

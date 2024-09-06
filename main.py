@@ -3,7 +3,7 @@ import time
 import argparse
 import lightning as L
 
-from dataloaders import prepare_dataloaders
+from cimat_dataloaders import prepare_dataloaders
 from torch import nn, optim
 from models.unet_resnet34 import UnetResNet34
 from module import CimatModule
