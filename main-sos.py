@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     # Test example segmentations
     results_dir = os.path.join(
-        "results", f"cimat_dataset{args.dataset}_trainset{trainset}", "figures"
+        "results", "sos_dataset", "figures"
     )
     os.makedirs(results_dir, exist_ok=True)
     model = CimatModule.load_from_checkpoint("sos-best_model.ckpt")
