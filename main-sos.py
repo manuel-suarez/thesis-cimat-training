@@ -1,5 +1,6 @@
 import os
 import time
+import torch
 import argparse
 import lightning as L
 
@@ -79,7 +80,8 @@ if __name__ == "__main__":
         "results", "sos_dataset", "figures"
     )
     os.makedirs(results_dir, exist_ok=True)
-    model = CimatModule.load_from_checkpoint("sos-best_model.ckpt")
+    checkpoint = torch.load("sos-best_model.ckpt")
+    print(checkpoint.keys())
     model.eval()
     for directory, loader in zip(
         ["train", "valid", "test"],
@@ -89,9 +91,15 @@ if __name__ == "__main__":
         os.makedirs(figures_dir, exist_ok=True)
         for images, labels in loader:
             predictions = model(images)
+            print("Images shape: ", images.shape)
+            print("Labels shape: ", labels.shape)
+            print("Preds shape: ", predictions.shape)
+
+            images, labels, predictions = images.detach().numpy(), labels.detach().numpy(), predictions.detach().numpy()
 
             fig, axs = plt.subplots(1, 3, figsize=(12, 8))
-            axs[0].imshow(images)
-            axs[1].imshow(predictions)
-            axs[2].imshow(labels)
+            axs[0].imshow(images[0,0,:,:])
+            axs[1].imshow(predictions[0,0,:,:])
+            axs[2].imshow(labels[0,0,:,:])
             plt.savefig(os.path.join(figures_dir, "result.png"))
+            plt.close()
