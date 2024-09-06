@@ -48,7 +48,7 @@ if __name__ == "__main__":
     model = UnetResNet34()
     loss_fn = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
-    logger = CSVLogger(os.path.join(f"logs_dataset{trainset}"), name="results.csv")
+    logger = CSVLogger("logs", name=f"cimat_dataset{args.dataset}_trainset{trainset}")
     module = CimatModule(model, optimizer, loss_fn)
     trainer = L.Trainer(
         max_epochs=int(args.num_epochs), devices=1, accelerator="gpu", logger=logger
@@ -76,3 +76,25 @@ if __name__ == "__main__":
     print(
         "[INFO] total time taken to test the model: {:.2f}s".format(endTime - startTime)
     )
+
+    from matplotlib import pyplot as plt
+
+    # Test example segmentations
+    results_dir = os.path.join(
+        "results", f"cimat_dataset{args.dataset}_trainset{trainset}", "figures"
+    )
+    os.makedirs(results_dir, exist_ok=True)
+    for directory, loader in zip(
+        ["train", "valid", "test"],
+        [train_dataloader, valid_dataloader, test_dataloader],
+    ):
+        figures_dir = os.path.join(results_dir, directory)
+        os.makedirs(figures_dir, exist_ok=True)
+        for images, labels in loader:
+            predictions = module(images)
+
+            fig, axs = plt.subplots(1, 3, figsize=(12, 8))
+            axs[0].imshow(images)
+            axs[1].imshow(predictions)
+            axs[2].imshow(labels)
+            plt.savefig(os.path.join(figures_dir, "result.png"))
