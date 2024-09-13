@@ -5,6 +5,7 @@ import argparse
 import lightning as L
 
 from datasets import get_dataloaders
+from models import get_model
 
 from torch import nn, optim
 from models.unet_resnet34 import UnetResNet34
@@ -15,6 +16,8 @@ if __name__ == "__main__":
     # Load command arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("dataset")
+    parser.add_argument("model_arch")
+    parser.add_argument("--model_encoder", required=False)
 
     # parser.add_argument("results_path")
     # parser.add_argument("num_epochs")
@@ -39,11 +42,12 @@ if __name__ == "__main__":
     home_dir = os.path.expanduser("~")
     # Features to use
     # feat_channels = ["ORIGIN", "ORIGIN", "VAR"]
+
     # Dataloaders
     dataloaders = get_dataloaders(home_dir, args.dataset, args)
+    # Model
+    model = get_model(args.model_arch, args.model_encoder)
 
-    # Load and configure model (segmentation_models_pytorch)
-    model = UnetResNet34()
     loss_fn = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
     logger = CSVLogger("logs", name=f"cimat_dataset{args.dataset}_trainset{trainset}")
