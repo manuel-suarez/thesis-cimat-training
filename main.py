@@ -24,12 +24,16 @@ def get_loss(ds_name):
         return nn.BCEWithLogitsLoss()
 
 
-def get_trainer_configuration():
+def get_trainer_configuration(ds_name, model):
     # Loss function and optimizer
     loss_fn = get_loss(args.dataset)
-    optimizer = get_optimizer()
+    optimizer = get_optimizer(model)
+    # TODO name of output directory
     logger = CSVLogger("logs", name=f"cimat_dataset{args.dataset}_trainset{trainset}")
-    module = CimatModule(model, optimizer, loss_fn)
+    if ds_name == "krestenitis":
+        module = CimatModule(model, optimizer, loss_fn, "multiclass", 5)
+    else:
+        module = CimatModule(model, optimizer, loss_fn)
     trainer = L.Trainer(
         max_epochs=int(args.num_epochs), devices=1, accelerator="gpu", logger=logger
     )
@@ -37,7 +41,7 @@ def get_trainer_configuration():
 
 
 # Actually we are using Adam for all cases
-def get_optimizer():
+def get_optimizer(model):
     return optim.Adam(model.parameters(), lr=1e-4)
 
 
@@ -73,6 +77,42 @@ def testing_step(trainer, module, dataloaders):
     print(
         "[INFO] total time taken to test the model: {:.2f}s".format(endTime - startTime)
     )
+
+
+def predictions_step(model, dataloaders):
+    from matplotlib import pyplot as plt
+
+    # Test example segmentations
+    results_dir = os.path.join(
+        "results", f"cimat_dataset{args.dataset}_trainset{trainset}", "figures"
+    )
+    os.makedirs(results_dir, exist_ok=True)
+    model.eval()
+    train_dataloader, valid_dataloader, test_dataloader = dataloaders
+    for directory, loader in zip(
+        ["train", "valid", "test"],
+        [train_dataloader, valid_dataloader, test_dataloader],
+    ):
+        figures_dir = os.path.join(results_dir, directory)
+        os.makedirs(figures_dir, exist_ok=True)
+        for images, labels in loader:
+            predictions = model(images)
+            print("Images shape: ", images.shape)
+            print("Labels shape: ", labels.shape)
+            print("Preds shape: ", predictions.shape)
+
+            images, labels, predictions = (
+                images.detach().numpy(),
+                labels.detach().numpy(),
+                predictions.detach().numpy(),
+            )
+
+            fig, axs = plt.subplots(1, 3, figsize=(12, 8))
+            axs[0].imshow(images[0, 0, :, :])
+            axs[1].imshow(predictions[0, 0, :, :])
+            axs[2].imshow(labels[0, 0, :, :])
+            plt.savefig(os.path.join(figures_dir, "result.png"))
+            plt.close()
 
 
 if __name__ == "__main__":
@@ -111,45 +151,10 @@ if __name__ == "__main__":
     # Model
     model = get_model(args.model_arch, args.model_encoder)
     # Training configuration
-    module, trainer = get_trainer_configuration()
+    module, trainer = get_trainer_configuration(args.dataset, model)
     # Training step
     training_step(trainer, module, dataloaders)
     # Testing step
     testing_step(trainer, module, dataloaders)
-
-    from matplotlib import pyplot as plt
-
-    # Test example segmentations
-    results_dir = os.path.join(
-        "results", f"cimat_dataset{args.dataset}_trainset{trainset}", "figures"
-    )
-    os.makedirs(results_dir, exist_ok=True)
-    checkpoint = torch.load(
-        f"cimat_dataset{args.dataset}_trainset{trainset}-best_model.ckpt"
-    )
-    print(checkpoint.keys())
-    model.eval()
-    for directory, loader in zip(
-        ["train", "valid", "test"],
-        [train_dataloader, valid_dataloader, test_dataloader],
-    ):
-        figures_dir = os.path.join(results_dir, directory)
-        os.makedirs(figures_dir, exist_ok=True)
-        for images, labels in loader:
-            predictions = model(images)
-            print("Images shape: ", images.shape)
-            print("Labels shape: ", labels.shape)
-            print("Preds shape: ", predictions.shape)
-
-            images, labels, predictions = (
-                images.detach().numpy(),
-                labels.detach().numpy(),
-                predictions.detach().numpy(),
-            )
-
-            fig, axs = plt.subplots(1, 3, figsize=(12, 8))
-            axs[0].imshow(images[0, 0, :, :])
-            axs[1].imshow(predictions[0, 0, :, :])
-            axs[2].imshow(labels[0, 0, :, :])
-            plt.savefig(os.path.join(figures_dir, "result.png"))
-            plt.close()
+    # Predictions step
+    predictions_step(model, dataloaders)
