@@ -8,9 +8,72 @@ from datasets import get_dataloaders
 from models import get_model
 
 from torch import nn, optim
-from models.unet_resnet34 import UnetResNet34
 from module import CimatModule
 from lightning.pytorch.loggers import CSVLogger
+
+# Currently we are implemented the loss and optimizer selection in main module, however in the future
+# maybe we can move to his own modules depending on other selections or features
+
+
+# Loss function depends on type of segmentation (depending on dataset name)
+def get_loss(ds_name):
+    # Most of problems are binary segmentation so we only need to distinguis on krestenitis dataset
+    if ds_name == "krestenitis":
+        return nn.CrossEntropyLoss()
+    else:
+        return nn.BCEWithLogitsLoss()
+
+
+def get_trainer_configuration():
+    # Loss function and optimizer
+    loss_fn = get_loss(args.dataset)
+    optimizer = get_optimizer()
+    logger = CSVLogger("logs", name=f"cimat_dataset{args.dataset}_trainset{trainset}")
+    module = CimatModule(model, optimizer, loss_fn)
+    trainer = L.Trainer(
+        max_epochs=int(args.num_epochs), devices=1, accelerator="gpu", logger=logger
+    )
+    return module, trainer
+
+
+# Actually we are using Adam for all cases
+def get_optimizer():
+    return optim.Adam(model.parameters(), lr=1e-4)
+
+
+def training_step(trainer, module, dataloaders):
+    # Extract dataloaders
+    train_dataloader, valid_dataloader, _ = dataloaders
+    print("[INFO] training the network...")
+    startTime = time.time()
+    trainer.fit(
+        model=module,
+        train_dataloaders=train_dataloader,
+        val_dataloaders=valid_dataloader,
+    )
+    # display total time
+    endTime = time.time()
+    trainer.save_checkpoint(
+        f"cimat_dataset{args.dataset}_trainset{trainset}-best_model.ckpt"
+    )
+    print(
+        "[INFO] total time taken to train the model: {:.2f}s".format(
+            endTime - startTime
+        )
+    )
+
+
+def testing_step(trainer, module, dataloaders):
+    _, _, test_dataloader = dataloaders
+    print("[INFO] testing the network...")
+    startTime = time.time()
+    trainer.test(model=module, dataloaders=test_dataloader)
+    # display total time
+    endTime = time.time()
+    print(
+        "[INFO] total time taken to test the model: {:.2f}s".format(endTime - startTime)
+    )
+
 
 if __name__ == "__main__":
     # Load command arguments
@@ -47,40 +110,12 @@ if __name__ == "__main__":
     dataloaders = get_dataloaders(home_dir, args.dataset, args)
     # Model
     model = get_model(args.model_arch, args.model_encoder)
-
-    loss_fn = nn.BCEWithLogitsLoss()
-    optimizer = optim.Adam(model.parameters(), lr=1e-4)
-    logger = CSVLogger("logs", name=f"cimat_dataset{args.dataset}_trainset{trainset}")
-    module = CimatModule(model, optimizer, loss_fn)
-    trainer = L.Trainer(
-        max_epochs=int(args.num_epochs), devices=1, accelerator="gpu", logger=logger
-    )
-    # Training
-    print("[INFO] training the network...")
-    startTime = time.time()
-    trainer.fit(
-        model=module,
-        train_dataloaders=train_dataloader,
-        val_dataloaders=valid_dataloader,
-    )
-    # display total time
-    endTime = time.time()
-    trainer.save_checkpoint(
-        f"cimat_dataset{args.dataset}_trainset{trainset}-best_model.ckpt"
-    )
-    print(
-        "[INFO] total time taken to train the model: {:.2f}s".format(
-            endTime - startTime
-        )
-    )
-    print("[INFO] testing the network...")
-    startTime = time.time()
-    trainer.test(model=module, dataloaders=test_dataloader)
-    # display total time
-    endTime = time.time()
-    print(
-        "[INFO] total time taken to test the model: {:.2f}s".format(endTime - startTime)
-    )
+    # Training configuration
+    module, trainer = get_trainer_configuration()
+    # Training step
+    training_step(trainer, module, dataloaders)
+    # Testing step
+    testing_step(trainer, module, dataloaders)
 
     from matplotlib import pyplot as plt
 
