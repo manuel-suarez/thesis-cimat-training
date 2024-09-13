@@ -4,7 +4,8 @@ import torch
 import argparse
 import lightning as L
 
-from cimat_dataloaders import prepare_dataloaders
+from datasets import get_dataloaders
+
 from torch import nn, optim
 from models.unet_resnet34 import UnetResNet34
 from module import CimatModule
@@ -14,36 +15,32 @@ if __name__ == "__main__":
     # Load command arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("dataset")
-    parser.add_argument("results_path")
-    parser.add_argument("num_epochs")
+
+    # parser.add_argument("results_path")
+    # parser.add_argument("num_epochs")
     args = parser.parse_args()
     print(args)
 
     # Use SLURM array environment variables to determine training and cross validation set number
-    slurm_array_job_id = int(os.getenv("SLURM_ARRAY_JOB_ID"))
-    slurm_array_task_id = int(os.getenv("SLURM_ARRAY_TASK_ID"))
-    slurm_node_list = os.getenv("SLURM_JOB_NODELIST")
-    print(f"SLURM_ARRAY_JOB_ID: {slurm_array_job_id}")
-    print(f"SLURM_ARRAY_TASK_ID: {slurm_array_task_id}")
-    print(f"SLURM_JOB_NODELIST: {slurm_node_list}")
+    # slurm_array_job_id = int(os.getenv("SLURM_ARRAY_JOB_ID"))
+    # slurm_array_task_id = int(os.getenv("SLURM_ARRAY_TASK_ID"))
+    # slurm_node_list = os.getenv("SLURM_JOB_NODELIST")
+    # print(f"SLURM_ARRAY_JOB_ID: {slurm_array_job_id}")
+    # print(f"SLURM_ARRAY_TASK_ID: {slurm_array_task_id}")
+    # print(f"SLURM_JOB_NODELIST: {slurm_node_list}")
 
-    trainset = "{:02}".format(slurm_array_task_id)
-    print(f"Trainset: {trainset}")
+    # trainset = "{:02}".format(slurm_array_task_id)
+    # print(f"Trainset: {trainset}")
 
     # Check if results path exists
-    if not os.path.exists(args.results_path):
-        os.makedirs(args.results_path, exist_ok=True)
+    # if not os.path.exists(args.results_path):
+    #    os.makedirs(args.results_path, exist_ok=True)
     # Configure directories
     home_dir = os.path.expanduser("~")
     # Features to use
-    feat_channels = ["ORIGIN", "ORIGIN", "VAR"]
+    # feat_channels = ["ORIGIN", "ORIGIN", "VAR"]
     # Dataloaders
-    train_dataloader, valid_dataloader, test_dataloader = prepare_dataloaders(
-        base_dir=home_dir,
-        dataset=args.dataset,
-        trainset=trainset,
-        feat_channels=feat_channels,
-    )
+    dataloaders = get_dataloaders(home_dir, args.dataset, args)
 
     # Load and configure model (segmentation_models_pytorch)
     model = UnetResNet34()
