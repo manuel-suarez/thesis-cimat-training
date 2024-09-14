@@ -11,6 +11,77 @@ from torch import nn, optim
 from module import CimatModule
 from lightning.pytorch.loggers import CSVLogger
 
+
+def get_problem_type(ds_name):
+    if ds_name in ["cimat", "krestenitis", "sos"]:
+        return "oil_spill"
+    if ds_name in ["chn6_cug"]:
+        return "road"
+    if ds_name in ["chase_db1", "stare", "drive"]:
+        return "retinal"
+    raise Exception(
+        f"No existe un tipo de problema registrado para el dataset {ds_name}"
+    )
+
+
+def build_dataset_name(ds_name, ds_args):
+    # For Cimat dataset we need the aditional parameters (however these were tested before this function call so we don't need to test again)
+    if ds_name == "cimat":
+        dataset_num = ds_args["dataset_num"]
+        trainset_num = ds_args["trainset_num"]
+        dataset_channels = ds_args["dataset_channels"]
+        return f"cimat_dataset{dataset_num}_trainset{trainset_num}_channels{dataset_channels}"
+    # Others dataset only returns the name (we don't need in this moment other parameters)
+    return ds_name
+
+
+def configure_results_path(
+    results_path,
+    ds_name,
+    ds_args,
+    model_arch,
+    model_encoder,
+    loss_fn,
+    optimizer,
+    epochs,
+):
+    # We need to create results directories according to the files that will be saved in them
+    if (ds_name == "cimat") and not (
+        ("dataset_num" in ds_args)
+        and ("trainset_num" in ds_args)
+        and ("dataset_channels" in ds_args)
+    ):
+        raise Exception(
+            f"No se proporcionaron los argumentos necesarios para el dataset Cimat (dataset_num, trainset_num, dataset_channels)"
+        )
+
+    # The configuration must be:
+    # result_base
+    # - problem_type{oil_spill|road|retinal}
+    #  - dataset_name{cimat|krestenitis|sos|chn6_cug|chase_db1|stare|drive}+dataset_num{17,19,20}+trainset_num{01-30}, currently only cimat dataset has dataset_num and trainset_num
+    #   - architecture{unet,unetpp,fpn,linknet,pspnet,manet,deeplabv3p}+encoder[optional]{vgg16,vgg19,resnet18,resnet34,senet,efficientnetb0}
+    #    - loss_fn+optimizer
+    #     - epochs
+    if model_encoder != None:
+        model_name = model_arch + "_" + model_encoder
+    else:
+        model_name = model_arch
+    results_dir = os.path.join(
+        results_path,
+        get_problem_type(ds_name),
+        build_dataset_name(ds_name, ds_args),
+        model_name,
+        loss_fn + "_" + optimizer,
+        f"epochs_{epochs}",
+    )
+    os.makedirs(results_dir, exist_ok=True)
+    # Ahora generamos los directorios para los diferentes resultados
+    os.makedirs(os.path.join(results_dir, "checkpoints"), exist_ok=True)
+    os.makedirs(os.path.join(results_dir, "metrics"), exist_ok=True)
+    os.makedirs(os.path.join(results_dir, "predictions"), exist_ok=True)
+    os.makedirs(os.path.join(results_dir, "figures"), exist_ok=True)
+
+
 # Currently we are implemented the loss and optimizer selection in main module, however in the future
 # maybe we can move to his own modules depending on other selections or features
 
@@ -118,9 +189,11 @@ def predictions_step(model, dataloaders):
 if __name__ == "__main__":
     # Load command arguments
     parser = argparse.ArgumentParser()
+    parser.add_argument("results_path")
     parser.add_argument("dataset")
     parser.add_argument("model_arch")
     parser.add_argument("--model_encoder", required=False)
+    parser.add_argument("--model_channels", required=False)
 
     # parser.add_argument("results_path")
     # parser.add_argument("num_epochs")
