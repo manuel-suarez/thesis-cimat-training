@@ -9,7 +9,9 @@ from models import get_model
 
 from torch import nn, optim
 from module import CimatModule
+from matplotlib import pyplot as plt
 from lightning.pytorch.loggers import CSVLogger
+from skimage.io import imsave
 
 
 def get_problem_type(ds_name):
@@ -80,6 +82,8 @@ def configure_results_path(
     os.makedirs(os.path.join(results_dir, "metrics"), exist_ok=True)
     os.makedirs(os.path.join(results_dir, "predictions"), exist_ok=True)
     os.makedirs(os.path.join(results_dir, "figures"), exist_ok=True)
+    # Retornamos el directorio base para su uso en subsecuentes funciones
+    return results_dir
 
 
 # Currently we are implemented the loss and optimizer selection in main module, however in the future
@@ -91,16 +95,22 @@ def get_loss(ds_name):
     # Most of problems are binary segmentation so we only need to distinguis on krestenitis dataset
     if ds_name == "krestenitis":
         return nn.CrossEntropyLoss()
-    else:
-        return nn.BCEWithLogitsLoss()
+    return nn.BCEWithLogitsLoss()
 
 
-def get_trainer_configuration(ds_name, model):
+def get_loss_name(ds_name):
+    if ds_name == "krestenitis":
+        return "crossentropyloss"
+    return "bcewithlogitsloss"
+
+
+def get_trainer_configuration(ds_name, model, results_dir):
     # Loss function and optimizer
     loss_fn = get_loss(args.dataset)
     optimizer = get_optimizer(model)
-    # TODO name of output directory
-    logger = CSVLogger("logs", name=f"cimat_dataset{args.dataset}_trainset{trainset}")
+    logger = CSVLogger(
+        os.path.join(results_dir, "metrics"),
+    )
     if ds_name == "krestenitis":
         module = CimatModule(model, optimizer, loss_fn, "multiclass", 5)
     else:
@@ -116,7 +126,11 @@ def get_optimizer(model):
     return optim.Adam(model.parameters(), lr=1e-4)
 
 
-def training_step(trainer, module, dataloaders):
+def get_optimizer_name():
+    return "adam"
+
+
+def training_step(trainer, module, dataloaders, results_dir):
     # Extract dataloaders
     train_dataloader, valid_dataloader, _ = dataloaders
     print("[INFO] training the network...")
@@ -129,7 +143,7 @@ def training_step(trainer, module, dataloaders):
     # display total time
     endTime = time.time()
     trainer.save_checkpoint(
-        f"cimat_dataset{args.dataset}_trainset{trainset}-best_model.ckpt"
+        os.path.join(results_dir, "checkpoints", "training_model.ckpt")
     )
     print(
         "[INFO] total time taken to train the model: {:.2f}s".format(
@@ -150,27 +164,25 @@ def testing_step(trainer, module, dataloaders):
     )
 
 
-def predictions_step(model, dataloaders):
-    from matplotlib import pyplot as plt
-
+def predictions_step(model, dataloaders, results_dir):
     # Test example segmentations
-    results_dir = os.path.join(
-        "results", f"cimat_dataset{args.dataset}_trainset{trainset}", "figures"
-    )
-    os.makedirs(results_dir, exist_ok=True)
+    figures_dir = os.path.join(results_dir, "figures")
+    predictions_dir = os.path.join(results_dir, "predictions")
+
     model.eval()
     train_dataloader, valid_dataloader, test_dataloader = dataloaders
     for directory, loader in zip(
         ["train", "valid", "test"],
         [train_dataloader, valid_dataloader, test_dataloader],
     ):
-        figures_dir = os.path.join(results_dir, directory)
-        os.makedirs(figures_dir, exist_ok=True)
-        for images, labels in loader:
+        # Generate predictions
+        loader_predictions_dir = os.path.join(predictions_dir, directory)
+        loader_figures_dir = os.path.join(figures_dir, directory)
+        os.makedirs(loader_predictions_dir, exist_ok=True)
+        os.makedirs(loader_figures_dir, exist_ok=True)
+        # Generate figures and predictions
+        for idx_batch, (images, labels) in enumerate(loader):
             predictions = model(images)
-            print("Images shape: ", images.shape)
-            print("Labels shape: ", labels.shape)
-            print("Preds shape: ", predictions.shape)
 
             images, labels, predictions = (
                 images.detach().numpy(),
@@ -178,11 +190,38 @@ def predictions_step(model, dataloaders):
                 predictions.detach().numpy(),
             )
 
+            # Save images, labels, predictions (batch size)
+            for idx_image, image in enumerate(images):
+                imsave(
+                    os.path.join(
+                        loader_predictions_dir, f"batch{idx_batch}_image{idx_image}.png"
+                    ),
+                    image,
+                )
+            for idx_label, label in enumerate(labels):
+                imsave(
+                    os.path.join(
+                        loader_predictions_dir, f"batch{idx_batch}_label{idx_label}.png"
+                    ),
+                    label,
+                )
+            for idx_prediction, prediction in enumerate(predictions):
+                imsave(
+                    os.path.join(
+                        loader_predictions_dir,
+                        f"batch{idx_batch}_prediction{idx_prediction}.png",
+                    ),
+                    prediction,
+                )
+
+            # Save figures
             fig, axs = plt.subplots(1, 3, figsize=(12, 8))
             axs[0].imshow(images[0, 0, :, :])
             axs[1].imshow(predictions[0, 0, :, :])
             axs[2].imshow(labels[0, 0, :, :])
-            plt.savefig(os.path.join(figures_dir, "result.png"))
+            plt.savefig(
+                os.path.join(loader_figures_dir, f"result_batch{idx_batch}.png")
+            )
             plt.close()
 
 
@@ -191,15 +230,31 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("results_path")
     parser.add_argument("dataset")
-    parser.add_argument("model_arch")
+    parser.add_argument("architecture")
+    parser.add_argument("epochs")
     parser.add_argument("--model_encoder", required=False)
     parser.add_argument("--model_channels", required=False)
+    parser.add_argument("--dataset_num", required=False)
+    parser.add_argument("--trainset_num", required=False)
+    parser.add_argument("--dataset_channels", required=False)
 
     # parser.add_argument("results_path")
     # parser.add_argument("num_epochs")
     args = parser.parse_args()
     print(args)
 
+    # Generic variables
+    ds_name = args.dataset
+    model_arch = args.architecture
+    model_encoder = args.model_encoder
+    epochs = args.epochs
+    ds_args = {}
+    if args.dataset_num:
+        ds_args["dataset_num"] = args.dataset_num
+    if args.trainset_num:
+        ds_args["trainset_num"] = args.trainset_num
+    if args.dataset_channels:
+        ds_args["dataset_channels"] = args.dataset_channels
     # Use SLURM array environment variables to determine training and cross validation set number
     # slurm_array_job_id = int(os.getenv("SLURM_ARRAY_JOB_ID"))
     # slurm_array_task_id = int(os.getenv("SLURM_ARRAY_TASK_ID"))
@@ -219,15 +274,26 @@ if __name__ == "__main__":
     # Features to use
     # feat_channels = ["ORIGIN", "ORIGIN", "VAR"]
 
+    # Results path
+    results_dir = configure_results_path(
+        args.results_path,
+        ds_name,
+        ds_args,
+        model_arch,
+        model_encoder,
+        get_loss_name(ds_name),
+        get_optimizer_name(),
+        epochs,
+    )
     # Dataloaders
     dataloaders = get_dataloaders(home_dir, args.dataset, args)
     # Model
     model = get_model(args.model_arch, args.model_encoder)
     # Training configuration
-    module, trainer = get_trainer_configuration(args.dataset, model)
+    module, trainer = get_trainer_configuration(args.dataset, model, results_dir)
     # Training step
-    training_step(trainer, module, dataloaders)
+    training_step(trainer, module, dataloaders, results_dir)
     # Testing step
     testing_step(trainer, module, dataloaders)
     # Predictions step
-    predictions_step(model, dataloaders)
+    predictions_step(model, dataloaders, results_dir)
