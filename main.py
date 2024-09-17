@@ -216,7 +216,9 @@ def predictions_step(model, dataloaders, results_dir):
             for idx_label, label in enumerate(labels):
                 label = np.transpose(label, (1, 2, 0))
                 print(f"\t{idx_label} label shape: ", label.shape)
-                label_p = Image.fromarray((label * 255).astype(np.uint8))
+                label = label * 255
+                label = label.astype(np.uint8)
+                label_p = Image.fromarray(label)
                 label_p = label_p.convert("L")
                 label_p.save(
                     os.path.join(
