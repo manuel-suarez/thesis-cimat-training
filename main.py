@@ -214,7 +214,8 @@ def predictions_step(model, dataloaders, results_dir):
                     )
                 )
             for idx_label, label in enumerate(labels):
-                label = np.transpose(label, (1, 2, 0))
+                # label = np.transpose(label, (1, 2, 0))
+                label = np.squeeze(label)
                 print(f"\t{idx_label} label shape: ", label.shape)
                 label = label * 255
                 label = label.astype(np.uint8)
