@@ -286,11 +286,11 @@ if __name__ == "__main__":
         epochs,
     )
     # Dataloaders
-    dataloaders = get_dataloaders(home_dir, args.dataset, ds_args)
+    dataloaders = get_dataloaders(home_dir, ds_name, ds_args)
     # Model
-    model = get_model(args.model_arch, args.model_encoder)
+    model = get_model(model_arch, model_encoder)
     # Training configuration
-    module, trainer = get_trainer_configuration(args.dataset, model, results_dir)
+    module, trainer = get_trainer_configuration(ds_name, model, results_dir)
     # Training step
     training_step(trainer, module, dataloaders, results_dir)
     # Testing step
