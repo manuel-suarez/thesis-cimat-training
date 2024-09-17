@@ -32,7 +32,7 @@ def build_dataset_name(ds_name, ds_args):
         dataset_num = ds_args["dataset_num"]
         trainset_num = ds_args["trainset_num"]
         dataset_channels = ds_args["dataset_channels"]
-        return f"cimat_dataset{dataset_num}_trainset{trainset_num}_channels{dataset_channels}"
+        return f"cimat_dataset-{dataset_num}_trainset-{trainset_num}_channels-{dataset_channels}"
     # Others dataset only returns the name (we don't need in this moment other parameters)
     return ds_name
 
@@ -80,6 +80,7 @@ def configure_results_path(
     # Ahora generamos los directorios para los diferentes resultados
     os.makedirs(os.path.join(results_dir, "checkpoints"), exist_ok=True)
     os.makedirs(os.path.join(results_dir, "metrics"), exist_ok=True)
+    os.makedirs(os.path.join(results_dir, "metrics", "lightning_logs"), exist_ok=True)
     os.makedirs(os.path.join(results_dir, "predictions"), exist_ok=True)
     os.makedirs(os.path.join(results_dir, "figures"), exist_ok=True)
     # Retornamos el directorio base para su uso en subsecuentes funciones
