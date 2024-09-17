@@ -7,6 +7,7 @@ import lightning as L
 from datasets import get_dataloaders
 from models import get_model
 
+from PIL import Image
 from torch import nn, optim
 from module import CimatModule
 from matplotlib import pyplot as plt
@@ -193,11 +194,12 @@ def predictions_step(model, dataloaders, results_dir):
 
             # Save images, labels, predictions (batch size)
             for idx_image, image in enumerate(images):
-                imsave(
+                image_p = Image.fromarray(image)
+                image_p = image_p.convert("L")
+                image_p.save(
                     os.path.join(
                         loader_predictions_dir, f"batch{idx_batch}_image{idx_image}.png"
-                    ),
-                    image,
+                    )
                 )
             for idx_label, label in enumerate(labels):
                 imsave(
