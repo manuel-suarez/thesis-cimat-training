@@ -191,9 +191,14 @@ def predictions_step(model, dataloaders, results_dir):
                 labels.detach().numpy(),
                 predictions.detach().numpy(),
             )
+            print("Shapes:")
+            print("\tImages: ", images.shape)
+            print("\tLabels: ", labels.shape)
+            print("\tPredictions: ", predictions.shape)
 
             # Save images, labels, predictions (batch size)
             for idx_image, image in enumerate(images):
+                print(f"\t{idx_image} image shape: ", image.shape)
                 image_p = Image.fromarray(image)
                 image_p = image_p.convert("L")
                 image_p.save(
