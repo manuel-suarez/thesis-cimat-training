@@ -5,7 +5,7 @@ import argparse
 import numpy as np
 import lightning as L
 
-from datasets import get_dataloaders
+from datasets import get_dataloaders, get_savers
 from models import get_model
 
 from PIL import Image
@@ -167,7 +167,9 @@ def testing_step(trainer, module, dataloaders):
     )
 
 
-def predictions_step(model, dataloaders, results_dir, max_batchs=10):
+def predictions_step(
+    model, dataloaders, results_dir, save_predictions, save_figures, max_batchs=10
+):
     # Test example segmentations
     figures_dir = os.path.join(results_dir, "figures")
     predictions_dir = os.path.join(results_dir, "predictions")
@@ -198,59 +200,12 @@ def predictions_step(model, dataloaders, results_dir, max_batchs=10):
             # print("\tPredictions: ", predictions.shape)
 
             # Save images, labels, predictions (batch size)
-            for idx_image, image in enumerate(images):
-                image = np.concatenate(
-                    (image[0, :, :], image[1, :, :], image[2, :, :]), axis=1
-                )
-                # print(f"\t{idx_image} image shape: ", image.shape)
-                # image = np.transpose(image, (1, 2, 0))
-                image = image * 255
-                image = image.astype(np.uint8)
-                image_p = Image.fromarray(image)
-                image_p = image_p.convert("L")
-                image_p.save(
-                    os.path.join(
-                        loader_predictions_dir, f"batch{idx_batch}_image{idx_image}.png"
-                    )
-                )
-            for idx_label, label in enumerate(labels):
-                # label = np.transpose(label, (1, 2, 0))
-                label = np.squeeze(label)
-                # print(f"\t{idx_label} label shape: ", label.shape)
-                label = label * 255
-                label = label.astype(np.uint8)
-                label_p = Image.fromarray(label)
-                label_p = label_p.convert("L")
-                label_p.save(
-                    os.path.join(
-                        loader_predictions_dir, f"batch{idx_batch}_label{idx_label}.png"
-                    )
-                )
-            for idx_prediction, prediction in enumerate(predictions):
-                # prediction = np.transpose(prediction, (1, 2, 0))
-                prediction = np.squeeze(prediction)
-                # print(f"\t{idx_prediction} prediction shape: ", prediction.shape)
-                prediction_p = Image.fromarray((prediction * 255).astype(np.uint8))
-                prediction_p = prediction_p.convert("L")
-                prediction_p.save(
-                    os.path.join(
-                        loader_predictions_dir,
-                        f"batch{idx_batch}_prediction{idx_prediction}.png",
-                    )
-                )
+            save_predictions(
+                idx_batch, images, labels, predictions, loader_predictions_dir
+            )
 
             # Save figures
-            fig, axs = plt.subplots(1, 3, figsize=(12, 8))
-            axs[0].imshow(images[0, 0, :, :])
-            axs[0].set_title("Imagen")
-            axs[1].imshow(predictions[0, 0, :, :])
-            axs[1].set_title("Prediction")
-            axs[2].imshow(labels[0, 0, :, :])
-            axs[2].set_title("Label")
-            plt.savefig(
-                os.path.join(loader_figures_dir, f"result_batch{idx_batch}.png")
-            )
-            plt.close()
+            save_figures(idx_batch, images, labels, predictions, loader_figures_dir)
 
             if idx_batch == max_batchs:
                 break
@@ -322,9 +277,11 @@ if __name__ == "__main__":
     model = get_model(model_arch, model_encoder)
     # Training configuration
     module, trainer = get_trainer_configuration(ds_name, model, epochs, results_dir)
+    # Functions to save results
+    save_predictions, save_figures = get_savers(ds_name)
     # Training step
     training_step(trainer, module, dataloaders, results_dir)
     # Testing step
     testing_step(trainer, module, dataloaders)
     # Predictions step
-    predictions_step(model, dataloaders, results_dir)
+    predictions_step(model, dataloaders, results_dir, save_predictions, save_figures)
