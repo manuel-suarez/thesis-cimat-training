@@ -202,10 +202,10 @@ def predictions_step(model, dataloaders, results_dir):
                 image = np.concatenate(
                     (image[0, :, :], image[1, :, :], image[2, :, :]), axis=1
                 )
+                print(f"\t{idx_image} image shape: ", image.shape)
                 # image = np.transpose(image, (1, 2, 0))
                 image = image * 255
                 image = image.astype(np.uint8)
-                print(f"\t{idx_image} image shape: ", image.shape)
                 image_p = Image.fromarray(image)
                 image_p = image_p.convert("L")
                 image_p.save(
@@ -214,19 +214,25 @@ def predictions_step(model, dataloaders, results_dir):
                     )
                 )
             for idx_label, label in enumerate(labels):
-                imsave(
+                label = np.transpose(label, (1, 2, 0))
+                print(f"\t{idx_label} label shape: ", label.shape)
+                label_p = Image.fromarray((label * 255).astype(np.uint8))
+                label_p = label_p.convert("L")
+                label_p.save(
                     os.path.join(
                         loader_predictions_dir, f"batch{idx_batch}_label{idx_label}.png"
-                    ),
-                    label,
+                    )
                 )
             for idx_prediction, prediction in enumerate(predictions):
-                imsave(
+                prediction = np.transpose(prediction, (1, 2, 0))
+                print(f"\t{idx_prediction} prediction shape: ", prediction.shape)
+                prediction_p = Image.fromarray((prediction * 255).astype(np.uint8))
+                prediction_p = prediction_p.convert("L")
+                prediction_p.save(
                     os.path.join(
                         loader_predictions_dir,
                         f"batch{idx_batch}_prediction{idx_prediction}.png",
-                    ),
-                    prediction,
+                    )
                 )
 
             # Save figures
