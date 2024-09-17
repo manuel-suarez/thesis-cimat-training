@@ -173,6 +173,8 @@ def predictions_step(
     # Test example segmentations
     figures_dir = os.path.join(results_dir, "figures")
     predictions_dir = os.path.join(results_dir, "predictions")
+    print("[INFO] generating predictions...")
+    startTime = time.time()
 
     model.eval()
     train_dataloader, valid_dataloader, test_dataloader = dataloaders
@@ -209,6 +211,14 @@ def predictions_step(
 
             if idx_batch == max_batchs:
                 break
+
+    # display total time
+    endTime = time.time()
+    print(
+        "[INFO] total time taken to generate predictions: {:.2f}s".format(
+            endTime - startTime
+        )
+    )
 
 
 if __name__ == "__main__":
@@ -285,3 +295,5 @@ if __name__ == "__main__":
     testing_step(trainer, module, dataloaders)
     # Predictions step
     predictions_step(model, dataloaders, results_dir, save_predictions, save_figures)
+
+    print("Done!")
