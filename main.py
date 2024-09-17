@@ -167,7 +167,7 @@ def testing_step(trainer, module, dataloaders):
     )
 
 
-def predictions_step(model, dataloaders, results_dir):
+def predictions_step(model, dataloaders, results_dir, max_batchs=10):
     # Test example segmentations
     figures_dir = os.path.join(results_dir, "figures")
     predictions_dir = os.path.join(results_dir, "predictions")
@@ -251,6 +251,9 @@ def predictions_step(model, dataloaders, results_dir):
                 os.path.join(loader_figures_dir, f"result_batch{idx_batch}.png")
             )
             plt.close()
+
+            if idx_batch == max_batchs:
+                break
 
 
 if __name__ == "__main__":
