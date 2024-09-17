@@ -242,8 +242,11 @@ def predictions_step(model, dataloaders, results_dir):
             # Save figures
             fig, axs = plt.subplots(1, 3, figsize=(12, 8))
             axs[0].imshow(images[0, 0, :, :])
+            axs[0].set_title("Imagen")
             axs[1].imshow(predictions[0, 0, :, :])
+            axs[1].set_title("Prediction")
             axs[2].imshow(labels[0, 0, :, :])
+            axs[2].set_title("Label")
             plt.savefig(
                 os.path.join(loader_figures_dir, f"result_batch{idx_batch}.png")
             )
