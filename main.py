@@ -192,17 +192,17 @@ def predictions_step(model, dataloaders, results_dir, max_batchs=10):
                 labels.detach().numpy(),
                 predictions.detach().numpy(),
             )
-            print("Shapes:")
-            print("\tImages: ", images.shape)
-            print("\tLabels: ", labels.shape)
-            print("\tPredictions: ", predictions.shape)
+            # print("Shapes:")
+            # print("\tImages: ", images.shape)
+            # print("\tLabels: ", labels.shape)
+            # print("\tPredictions: ", predictions.shape)
 
             # Save images, labels, predictions (batch size)
             for idx_image, image in enumerate(images):
                 image = np.concatenate(
                     (image[0, :, :], image[1, :, :], image[2, :, :]), axis=1
                 )
-                print(f"\t{idx_image} image shape: ", image.shape)
+                # print(f"\t{idx_image} image shape: ", image.shape)
                 # image = np.transpose(image, (1, 2, 0))
                 image = image * 255
                 image = image.astype(np.uint8)
@@ -216,7 +216,7 @@ def predictions_step(model, dataloaders, results_dir, max_batchs=10):
             for idx_label, label in enumerate(labels):
                 # label = np.transpose(label, (1, 2, 0))
                 label = np.squeeze(label)
-                print(f"\t{idx_label} label shape: ", label.shape)
+                # print(f"\t{idx_label} label shape: ", label.shape)
                 label = label * 255
                 label = label.astype(np.uint8)
                 label_p = Image.fromarray(label)
@@ -229,7 +229,7 @@ def predictions_step(model, dataloaders, results_dir, max_batchs=10):
             for idx_prediction, prediction in enumerate(predictions):
                 # prediction = np.transpose(prediction, (1, 2, 0))
                 prediction = np.squeeze(prediction)
-                print(f"\t{idx_prediction} prediction shape: ", prediction.shape)
+                # print(f"\t{idx_prediction} prediction shape: ", prediction.shape)
                 prediction_p = Image.fromarray((prediction * 255).astype(np.uint8))
                 prediction_p = prediction_p.convert("L")
                 prediction_p.save(
