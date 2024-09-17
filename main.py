@@ -2,6 +2,7 @@ import os
 import time
 import torch
 import argparse
+import numpy as np
 import lightning as L
 
 from datasets import get_dataloaders
@@ -198,6 +199,7 @@ def predictions_step(model, dataloaders, results_dir):
 
             # Save images, labels, predictions (batch size)
             for idx_image, image in enumerate(images):
+                image = np.transpose(image, (1, 2, 0))
                 print(f"\t{idx_image} image shape: ", image.shape)
                 image_p = Image.fromarray(image)
                 image_p = image_p.convert("L")
