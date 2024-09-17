@@ -16,6 +16,17 @@ from lightning.pytorch.loggers import CSVLogger
 from skimage.io import imsave
 
 
+def get_model_args(ds_name):
+    if ds_name == "krestenitis":
+        return {"in_channels": 1, "out_channels": 5}
+    if ds_name == "cimat":
+        return {"in_channels": 3, "out_channels": 1}
+    if ds_name == "chn6_cug":
+        return {"in_channels": 3, "out_channels": 1}
+    if ds_name == "sos":
+        return {"in_channels": 1, "out_channels": 1}
+
+
 def get_problem_type(ds_name):
     if ds_name in ["cimat", "krestenitis", "sos"]:
         return "oil_spill"
@@ -284,7 +295,7 @@ if __name__ == "__main__":
     # Dataloaders
     dataloaders = get_dataloaders(home_dir, ds_name, ds_args)
     # Model
-    model = get_model(model_arch, model_encoder)
+    model = get_model(model_arch, get_model_args(ds_name), model_encoder)
     # Training configuration
     module, trainer = get_trainer_configuration(ds_name, model, epochs, results_dir)
     # Functions to save results
