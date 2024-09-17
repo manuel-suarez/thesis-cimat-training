@@ -199,7 +199,9 @@ def predictions_step(model, dataloaders, results_dir):
 
             # Save images, labels, predictions (batch size)
             for idx_image, image in enumerate(images):
-                image = np.concatenate((image[0, :, :], image[1, :, :], image[2, :, :]))
+                image = np.concatenate(
+                    (image[0, :, :], image[1, :, :], image[2, :, :]), axis=1
+                )
                 # image = np.transpose(image, (1, 2, 0))
                 image = image * 255
                 image = image.astype(np.uint8)
