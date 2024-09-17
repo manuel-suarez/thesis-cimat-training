@@ -227,7 +227,8 @@ def predictions_step(model, dataloaders, results_dir):
                     )
                 )
             for idx_prediction, prediction in enumerate(predictions):
-                prediction = np.transpose(prediction, (1, 2, 0))
+                # prediction = np.transpose(prediction, (1, 2, 0))
+                prediction = np.squeeze(prediction)
                 print(f"\t{idx_prediction} prediction shape: ", prediction.shape)
                 prediction_p = Image.fromarray((prediction * 255).astype(np.uint8))
                 prediction_p = prediction_p.convert("L")
