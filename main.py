@@ -104,7 +104,7 @@ def get_loss_name(ds_name):
     return "bcewithlogitsloss"
 
 
-def get_trainer_configuration(ds_name, model, results_dir):
+def get_trainer_configuration(ds_name, model, epochs, results_dir):
     # Loss function and optimizer
     loss_fn = get_loss(args.dataset)
     optimizer = get_optimizer(model)
@@ -116,7 +116,7 @@ def get_trainer_configuration(ds_name, model, results_dir):
     else:
         module = CimatModule(model, optimizer, loss_fn)
     trainer = L.Trainer(
-        max_epochs=int(args.num_epochs), devices=1, accelerator="gpu", logger=logger
+        max_epochs=int(epochs), devices=1, accelerator="gpu", logger=logger
     )
     return module, trainer
 
@@ -290,7 +290,7 @@ if __name__ == "__main__":
     # Model
     model = get_model(model_arch, model_encoder)
     # Training configuration
-    module, trainer = get_trainer_configuration(ds_name, model, results_dir)
+    module, trainer = get_trainer_configuration(ds_name, model, epochs, results_dir)
     # Training step
     training_step(trainer, module, dataloaders, results_dir)
     # Testing step
