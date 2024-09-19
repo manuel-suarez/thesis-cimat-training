@@ -22,7 +22,7 @@ for model_arch in architectures:
                     f"--job-name={model_arch}-{model_encoder}-{dataset}",
                     f"--output={model_arch}-{model_encoder}-{dataset}-%A_%a.out",
                     "--wait",
-                    "run.slurm",
+                    "run-train.slurm",
                     dataset,
                     model_arch,
                     model_encoder,
