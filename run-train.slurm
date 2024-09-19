@@ -10,6 +10,10 @@
 dataset=$1
 model_arch=$2
 model_encoder=$3
+echo Parámetros:
+echo $model_arch
+echo $model_encoder
+echo $dataset
 # for dataset in krestenitis chn6_cug sos cimat
 # do 
 if [[ $dataset == "cimat" ]]

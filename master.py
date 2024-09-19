@@ -19,10 +19,12 @@ for model_arch in architectures:
             subprocess.run(
                 [
                     "sbatch",
-                    "--job-name=TestUnet",
-                    "--output=python-job-%j.out",
+                    f"--job-name={model_arch}-{model_encoder}-{dataset}",
+                    f"--output={model_arch}-{model_encoder}-{dataset}-%A_%a.out",
                     "--wait",
                     "run.slurm",
-                    "krestenitis",
+                    dataset,
+                    model_arch,
+                    model_encoder,
                 ]
             )
