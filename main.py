@@ -296,6 +296,8 @@ if __name__ == "__main__":
     dataloaders = get_dataloaders(home_dir, ds_name, ds_args)
     # Model
     model = get_model(model_arch, get_model_args(ds_name), model_encoder)
+    if model == None:
+        raise Exception("Error en la configuración del modelo")
     # Training configuration
     module, trainer = get_trainer_configuration(ds_name, model, epochs, results_dir)
     # Functions to save results
