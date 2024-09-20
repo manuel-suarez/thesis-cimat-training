@@ -20,7 +20,7 @@ for model_arch in architectures:
                 [
                     "sbatch",
                     f"--job-name={model_arch}-{model_encoder}-{dataset}",
-                    f"--output={model_arch}-{model_encoder}-{dataset}-%A_%a.out",
+                    f"--output=outputs/{model_arch}-{model_encoder}-{dataset}-%A_%a.out",
                     "--wait",
                     "run-train.slurm",
                     dataset,
