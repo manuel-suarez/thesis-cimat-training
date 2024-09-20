@@ -4,7 +4,7 @@
 #SBATCH --job-name=UNet-ResNet152
 #SBATCH --time=0
 #SBATCH --mem=0
-#SBATCH --array=1
+#SBATCH --array=1-30
 
 # srun /home/est_posgrado_manuel.suarez/tools/anaconda3/envs/py3.9-pt/bin/python main.py 17 results 5
 dataset=$1
@@ -20,7 +20,7 @@ if [[ $dataset == "cimat" ]]
 then
   srun /home/est_posgrado_manuel.suarez/tools/anaconda3/envs/py3.9-pt/bin/python main.py results $dataset $model_arch 1 --dataset_num 17 --trainset_num 01 --dataset_channels oov --model_encoder $model_encoder
 else
-  srun /home/est_posgrado_manuel.suarez/tools/anaconda3/envs/py3.9-pt/bin/python main.py results $dataset $model_arch 1 --model_encoder $model_encoder
+  srun /home/est_posgrado_manuel.suarez/tools/anaconda3/envs/py3.9-pt/bin/python main.py results $dataset $model_arch 1 --dataset_num 01 --trainset_num 01 --model_encoder $model_encoder
 fi
 # done
 
