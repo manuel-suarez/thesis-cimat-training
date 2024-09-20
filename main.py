@@ -41,13 +41,16 @@ def get_problem_type(ds_name):
 
 def build_dataset_name(ds_name, ds_args):
     # For Cimat dataset we need the aditional parameters (however these were tested before this function call so we don't need to test again)
+    # For other datasets:
+    #   We are using the dataset_num as a default value 01 because in the future maybe we can use data augmentation
+    #   We are using the trainset_num as an indicator for different permutations
+    dataset_num = ds_args["dataset_num"]
+    trainset_num = ds_args["trainset_num"]
     if ds_name == "cimat":
-        dataset_num = ds_args["dataset_num"]
-        trainset_num = ds_args["trainset_num"]
         dataset_channels = ds_args["dataset_channels"]
-        return f"cimat_dataset-{dataset_num}_trainset-{trainset_num}_channels-{dataset_channels}"
-    # Others dataset only returns the name (we don't need in this moment other parameters)
-    return ds_name
+        return f"{ds_name}_dataset-{dataset_num}_trainset-{trainset_num}_channels-{dataset_channels}"
+    else:
+        return f"{ds_name}_dataset-{dataset_num}_trainset-{trainset_num}"
 
 
 def configure_results_path(
@@ -61,6 +64,10 @@ def configure_results_path(
     epochs,
 ):
     # We need to create results directories according to the files that will be saved in them
+    if not (("dataset_num" in ds_args) and ("trainset_num" in ds_args)):
+        raise Exception(
+            f"No se proporcionaron los argumentos necesarios para el dataset {ds_name}"
+        )
     if (ds_name == "cimat") and not (
         ("dataset_num" in ds_args)
         and ("trainset_num" in ds_args)
@@ -262,17 +269,21 @@ if __name__ == "__main__":
         ds_args["trainset_num"] = args.trainset_num
     if args.dataset_channels:
         ds_args["dataset_channels"] = args.dataset_channels
+
     # Use SLURM array environment variables to determine training and cross validation set number
-    # slurm_array_job_id = int(os.getenv("SLURM_ARRAY_JOB_ID"))
-    # slurm_array_task_id = int(os.getenv("SLURM_ARRAY_TASK_ID"))
-    # slurm_node_list = os.getenv("SLURM_JOB_NODELIST")
-    # print(f"SLURM_ARRAY_JOB_ID: {slurm_array_job_id}")
-    # print(f"SLURM_ARRAY_TASK_ID: {slurm_array_task_id}")
-    # print(f"SLURM_JOB_NODELIST: {slurm_node_list}")
+    # If there is a command line argument we are using instead the environment variable (it takes precedence)
+    slurm_array_job_id = os.getenv("SLURM_ARRAY_JOB_ID")
+    slurm_array_task_id = os.getenv("SLURM_ARRAY_TASK_ID")
+    slurm_node_list = os.getenv("SLURM_JOB_NODELIST")
+    print(f"SLURM_ARRAY_JOB_ID: {slurm_array_job_id}")
+    print(f"SLURM_ARRAY_TASK_ID: {slurm_array_task_id}")
+    print(f"SLURM_JOB_NODELIST: {slurm_node_list}")
 
-    # trainset = "{:02}".format(slurm_array_task_id)
-    # print(f"Trainset: {trainset}")
+    if slurm_array_task_id is not None:
+        ds_args["trainset_num"] = "{:02}".format(int(slurm_array_task_id))
 
+    print("Dataset arguments:")
+    print(ds_args)
     # Check if results path exists
     # if not os.path.exists(args.results_path):
     #    os.makedirs(args.results_path, exist_ok=True)
