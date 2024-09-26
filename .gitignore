@@ -3,4 +3,5 @@ __pycache__
 logs_*
 logs
 results
+figures
 *.ckpt
