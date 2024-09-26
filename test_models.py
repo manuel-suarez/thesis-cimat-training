@@ -1,6 +1,6 @@
-from logging import exception
 import unittest
 from models import get_model
+from torchview import draw_graph
 
 
 architectures = ["unet"]
@@ -35,7 +35,18 @@ def create_test_for_encoder(encoder):
     def test_encoder(self):
         print(f"Testing {encoder}")
         try:
-            _ = get_model("unet", {"in_channels": 3, "out_channels": 1}, encoder)
+            model = get_model("unet", {"in_channels": 3, "out_channels": 1}, encoder)
+            # We are using draw_graph to eval the model graph
+            draw_graph(
+                model,
+                input_size=(1, 3, 224, 224),
+                depth=5,
+                show_shapes=True,
+                expand_nested=True,
+                save_graph=True,
+                filename="unet+efficientnetb0",
+                directory="figures",
+            )
         except:
             self.fail("No se pudo crear el modelo")
 
