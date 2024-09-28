@@ -15,6 +15,7 @@ encoders = [
     "resnet101",
     "resnet152",
     "senet154",
+    "cbamnet154",
     "efficientnetb0",
     "efficientnetb1",
     "efficientnetb2",
