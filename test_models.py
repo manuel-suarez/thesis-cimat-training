@@ -50,6 +50,11 @@ class TestFPNEncoders(TestBaseEncoders):
         super().__init__("fpn", methodName)
 
 
+class TestPSPNetEncoders(TestBaseEncoders):
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__("pspnet", methodName)
+
+
 def create_test_for_encoder(encoder):
     def test_encoder(self):
         print(f"Testing {encoder}")
@@ -76,6 +81,7 @@ for encoder in encoders:
     setattr(TestUnetEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
     setattr(TestLinknetEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
     setattr(TestFPNEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
+    setattr(TestPSPNetEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
 
 
 if __name__ == "__main__":
