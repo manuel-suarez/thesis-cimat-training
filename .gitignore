@@ -5,3 +5,4 @@ logs
 results
 figures
 *.ckpt
+.ipynb_*
