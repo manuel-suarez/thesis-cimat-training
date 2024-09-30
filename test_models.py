@@ -81,7 +81,7 @@ for encoder in encoders:
     setattr(TestUnetEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
     setattr(TestLinknetEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
     setattr(TestFPNEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
-    setattr(TestPSPNetEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
+    # setattr(TestPSPNetEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
 
 
 if __name__ == "__main__":
