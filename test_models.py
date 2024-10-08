@@ -35,7 +35,7 @@ class TestBaseEncoders(unittest.TestCase):
     def __init__(self, model, methodName: str = "runTest") -> None:
         super().__init__(methodName)
         self.model = model
-        self.parameters = {"in_channels": 1, "out_channels": 1, "wavelets_mode": False}
+        self.parameters = {"in_channels": 3, "out_channels": 1, "wavelets_mode": False}
 
 
 class TestUnetEncoders(TestBaseEncoders):
@@ -66,9 +66,10 @@ def create_test_for_encoder(encoder, wavelets_mode=False):
             model = get_model(self.model, self.parameters, encoder)
             # We are using draw_graph to eval the model graph
             if not wavelets_mode:
+                print("Test in normal mode")
                 draw_graph(
                     model,
-                    input_size=(1, 1, 224, 224),
+                    input_size=(1, 3, 224, 224),
                     depth=5,
                     show_shapes=True,
                     expand_nested=True,
@@ -76,6 +77,7 @@ def create_test_for_encoder(encoder, wavelets_mode=False):
                     filename=f"{self.model}-{encoder}_n",
                     directory="figures",
                 )
+                return
             if wavelets_mode >= 0:
                 x = np.random.randn(1, 1, 256, 256).astype(np.float32)
                 x1, _ = pywt.dwt2(x, "db1")
@@ -102,6 +104,7 @@ def create_test_for_encoder(encoder, wavelets_mode=False):
                     filename=f"{self.model}-{encoder}_w{wavelets_mode}",
                     directory="figures",
                 )
+                return
 
         except:
             self.fail("No se pudo crear el modelo")
