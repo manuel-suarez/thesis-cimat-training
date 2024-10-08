@@ -1,7 +1,4 @@
-import pywt
-import torch
 import unittest
-import numpy as np
 from models import get_model
 from torchview import draw_graph
 
@@ -58,51 +55,22 @@ class TestPSPNetEncoders(TestBaseEncoders):
         super().__init__("pspnet", methodName)
 
 
-def create_test_for_encoder(encoder, wavelets_mode=False):
+def create_test_for_encoder(encoder):
     def test_encoder(self):
         print(f"Testing {encoder}")
         try:
-            self.parameters["wavelets_mode"] = wavelets_mode
             model = get_model(self.model, self.parameters, encoder)
             # We are using draw_graph to eval the model graph
-            if not wavelets_mode:
-                draw_graph(
-                    model,
-                    input_size=(1, 3, 224, 224),
-                    depth=5,
-                    show_shapes=True,
-                    expand_nested=True,
-                    save_graph=True,
-                    filename=f"{self.model}-{encoder}",
-                    directory="figures",
-                )
-            if wavelets_mode >= 0:
-                # Generate randon input and apply wavelets decomposition
-                x = np.random.randn(1, 1, 256, 256).astype(np.float32)
-                x1, _ = pywt.dwt2(x, "db1")
-                x2, _ = pywt.dwt2(x1, "db1")
-                x3, _ = pywt.dwt2(x2, "db1")
-                x4, _ = pywt.dwt2(x3, "db1")
-
-                x = torch.from_numpy(x)
-                x1 = torch.from_numpy(x1)
-                x2 = torch.from_numpy(x2)
-                x3 = torch.from_numpy(x3)
-                x4 = torch.from_numpy(x4)
-
-                input_data = [(x, x1, x2, x3, x4)]
-
-                draw_graph(
-                    model,
-                    input_data=input_data,
-                    # input_size=(1, 1, 256, 256),
-                    depth=7,
-                    show_shapes=True,
-                    expand_nested=True,
-                    save_graph=True,
-                    filename=f"{self.model}-{encoder}",
-                    directory="figures",
-                )
+            draw_graph(
+                model,
+                input_size=(1, 3, 224, 224),
+                depth=5,
+                show_shapes=True,
+                expand_nested=True,
+                save_graph=True,
+                filename=f"{self.model}-{encoder}",
+                directory="figures",
+            )
         except:
             self.fail("No se pudo crear el modelo")
 
@@ -110,28 +78,11 @@ def create_test_for_encoder(encoder, wavelets_mode=False):
 
 
 for encoder in encoders:
-    # Normal mode
-    setattr(TestUnetEncoders, f"test_n_{encoder}", create_test_for_encoder(encoder))
-    setattr(TestLinknetEncoders, f"test_n_{encoder}", create_test_for_encoder(encoder))
-    setattr(TestFPNEncoders, f"test_n_{encoder}", create_test_for_encoder(encoder))
+    setattr(TestUnetEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
+    setattr(TestLinknetEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
+    setattr(TestFPNEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
     # setattr(TestPSPNetEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
 
-    # setattr(
-    #    TestUnetEncoders,
-    #    f"test_w1_{encoder}",
-    #    create_test_for_encoder(encoder, wavelets_mode=1),
-    # )
-    # setattr(
-    #    TestLinknetEncoders,
-    #    f"test_w1_{encoder}",
-    #    create_test_for_encoder(encoder, wavelets_mode=1),
-    # )
-    # setattr(
-    #    TestFPNEncoders,
-    #    f"test_w1_{encoder}",
-    #    create_test_for_encoder(encoder, wavelets_mode=1),
-    # )
-    # setattr(TestPSPNetEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
 
 if __name__ == "__main__":
     unittest.main()
