@@ -1,3 +1,5 @@
+import pywt
+import torch
 import unittest
 from models import get_model
 from torchview import draw_graph
@@ -55,10 +57,11 @@ class TestPSPNetEncoders(TestBaseEncoders):
         super().__init__("pspnet", methodName)
 
 
-def create_test_for_encoder(encoder):
+def create_test_for_encoder(encoder, wavelets_mode=False):
     def test_encoder(self):
         print(f"Testing {encoder}")
         try:
+            self.parameters["wavelets_mode"] = wavelets_mode
             model = get_model(self.model, self.parameters, encoder)
             # We are using draw_graph to eval the model graph
             draw_graph(
@@ -78,9 +81,21 @@ def create_test_for_encoder(encoder):
 
 
 for encoder in encoders:
-    setattr(TestUnetEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
-    setattr(TestLinknetEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
-    setattr(TestFPNEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
+    setattr(
+        TestUnetEncoders,
+        f"test_{encoder}_n",
+        create_test_for_encoder(encoder, wavelets_mode=False),
+    )
+    setattr(
+        TestLinknetEncoders,
+        f"test_{encoder}_n",
+        create_test_for_encoder(encoder, wavelets_mode=False),
+    )
+    setattr(
+        TestFPNEncoders,
+        f"test_{encoder}_n",
+        create_test_for_encoder(encoder, wavelets_mode=False),
+    )
     # setattr(TestPSPNetEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
 
 
