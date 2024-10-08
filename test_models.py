@@ -79,6 +79,7 @@ def create_test_for_encoder(encoder, wavelets_mode=False):
                 )
                 return
             if wavelets_mode >= 0:
+                print(f"Test in wavelets mode level: {wavelets_mode}")
                 x = np.random.randn(1, 1, 256, 256).astype(np.float32)
                 x1, _ = pywt.dwt2(x, "db1")
                 x2, _ = pywt.dwt2(x1, "db1")
