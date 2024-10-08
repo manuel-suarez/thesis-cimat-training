@@ -1,6 +1,7 @@
 import pywt
 import torch
 import unittest
+import numpy as np
 from models import get_model
 from torchview import draw_graph
 
@@ -64,16 +65,44 @@ def create_test_for_encoder(encoder, wavelets_mode=False):
             self.parameters["wavelets_mode"] = wavelets_mode
             model = get_model(self.model, self.parameters, encoder)
             # We are using draw_graph to eval the model graph
-            draw_graph(
-                model,
-                input_size=(1, 3, 224, 224),
-                depth=5,
-                show_shapes=True,
-                expand_nested=True,
-                save_graph=True,
-                filename=f"{self.model}-{encoder}",
-                directory="figures",
-            )
+            if not wavelets_mode:
+                draw_graph(
+                    model,
+                    input_size=(1, 3, 224, 224),
+                    depth=5,
+                    show_shapes=True,
+                    expand_nested=True,
+                    save_graph=True,
+                    filename=f"{self.model}-{encoder}_n",
+                    directory="figures",
+                )
+            if wavelets_mode >= 0:
+                x = np.random.randn(1, 1, 256, 256).astype(np.float32)
+                x1, _ = pywt.dwt2(x, "db1")
+                x2, _ = pywt.dwt2(x1, "db1")
+                x3, _ = pywt.dwt2(x2, "db1")
+                x4, _ = pywt.dwt2(x3, "db1")
+
+                x = torch.from_numpy(x)
+                x1 = torch.from_numpy(x1)
+                x2 = torch.from_numpy(x2)
+                x3 = torch.from_numpy(x3)
+                x4 = torch.from_numpy(x4)
+
+                # Simulate input data with wavelet decomposition
+                input_data = [(x, x1, x2, x3, x4)]
+
+                draw_graph(
+                    model,
+                    input_data=input_data,
+                    depth=7,
+                    show_shapes=True,
+                    expand_nested=True,
+                    save_graph=True,
+                    filename=f"{self.model}-{encoder}_w{wavelets_mode}",
+                    directory="figures",
+                )
+
         except:
             self.fail("No se pudo crear el modelo")
 
@@ -98,6 +127,21 @@ for encoder in encoders:
     )
     # setattr(TestPSPNetEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
 
+    setattr(
+        TestUnetEncoders,
+        f"test_{encoder}_w1",
+        create_test_for_encoder(encoder, wavelets_mode=1),
+    )
+    setattr(
+        TestLinknetEncoders,
+        f"test_{encoder}_w1",
+        create_test_for_encoder(encoder, wavelets_mode=1),
+    )
+    setattr(
+        TestFPNEncoders,
+        f"test_{encoder}_w1",
+        create_test_for_encoder(encoder, wavelets_mode=1),
+    )
 
 if __name__ == "__main__":
     unittest.main()
