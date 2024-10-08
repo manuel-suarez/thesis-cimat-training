@@ -32,7 +32,7 @@ class TestBaseEncoders(unittest.TestCase):
     def __init__(self, model, methodName: str = "runTest") -> None:
         super().__init__(methodName)
         self.model = model
-        self.parameters = {"in_channels": 3, "out_channels": 1}
+        self.parameters = {"in_channels": 3, "out_channels": 1, "wavelets_mode": False}
 
 
 class TestUnetEncoders(TestBaseEncoders):
