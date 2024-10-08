@@ -35,7 +35,7 @@ class TestBaseEncoders(unittest.TestCase):
     def __init__(self, model, methodName: str = "runTest") -> None:
         super().__init__(methodName)
         self.model = model
-        self.parameters = {"in_channels": 3, "out_channels": 1, "wavelets_mode": False}
+        self.parameters = {"in_channels": 1, "out_channels": 1, "wavelets_mode": False}
 
 
 class TestUnetEncoders(TestBaseEncoders):
@@ -68,7 +68,7 @@ def create_test_for_encoder(encoder, wavelets_mode=False):
             if not wavelets_mode:
                 draw_graph(
                     model,
-                    input_size=(1, 3, 224, 224),
+                    input_size=(1, 1, 224, 224),
                     depth=5,
                     show_shapes=True,
                     expand_nested=True,
