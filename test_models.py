@@ -147,5 +147,21 @@ for encoder in encoders:
         create_test_for_encoder(encoder, wavelets_mode=1),
     )
 
+    setattr(
+        TestUnetEncoders,
+        f"test_{encoder}_w2",
+        create_test_for_encoder(encoder, wavelets_mode=2),
+    )
+    setattr(
+        TestLinknetEncoders,
+        f"test_{encoder}_w2",
+        create_test_for_encoder(encoder, wavelets_mode=2),
+    )
+    setattr(
+        TestFPNEncoders,
+        f"test_{encoder}_w2",
+        create_test_for_encoder(encoder, wavelets_mode=2),
+    )
+
 if __name__ == "__main__":
     unittest.main()
