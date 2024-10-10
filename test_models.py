@@ -163,5 +163,13 @@ for encoder in encoders:
     #    create_test_for_encoder(encoder, wavelets_mode=2),
     # )
 
+    if encoder == "vgg11":
+        setattr(
+            TestUnetEncoders,
+            f"test_{encoder}_w3",
+            create_test_for_encoder(encoder, wavelets_mode=3),
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
