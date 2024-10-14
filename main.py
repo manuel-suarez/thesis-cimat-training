@@ -20,7 +20,7 @@ def get_model_args(ds_name):
     if ds_name == "krestenitis":
         return {"in_channels": 1, "out_channels": 5}
     if ds_name == "cimat":
-        return {"in_channels": 1, "out_channels": 1, "wavelets_mode": True}
+        return {"in_channels": 1, "out_channels": 1, "wavelets_mode": False}
     if ds_name == "chn6_cug":
         return {"in_channels": 3, "out_channels": 1}
     if ds_name == "sos":

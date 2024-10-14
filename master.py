@@ -3,7 +3,7 @@ import subprocess
 
 architectures = ["unet"]
 encoders = [
-    "vgg11",
+    "resnet18",
 ]
 datasets = ["cimat"]
 epochs = 30
