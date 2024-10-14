@@ -72,6 +72,7 @@ def configure_results_path(
         ("dataset_num" in ds_args)
         and ("trainset_num" in ds_args)
         and ("dataset_channels" in ds_args)
+        and ("wavelets_mode" in ds_args)
     ):
         raise Exception(
             f"No se proporcionaron los argumentos necesarios para el dataset Cimat (dataset_num, trainset_num, dataset_channels)"
@@ -88,14 +89,29 @@ def configure_results_path(
         model_name = model_arch + "_" + model_encoder
     else:
         model_name = model_arch
-    results_dir = os.path.join(
-        results_path,
-        get_problem_type(ds_name),
-        build_dataset_name(ds_name, ds_args),
-        model_name,
-        loss_fn + "_" + optimizer,
-        f"epochs_{epochs}",
-    )
+    if "wavelets_mode" in ds_args:
+        results_dir = os.path.join(
+            results_path,
+            get_problem_type(ds_name),
+            build_dataset_name(ds_name, ds_args),
+            (
+                "no_wavelets"
+                if ds_args["wavelets_mode"] == False
+                else f"wavelets_l{ds_args['wavelets_mode']}"
+            ),
+            model_name,
+            loss_fn + "_" + optimizer,
+            f"epochs_{epochs}",
+        )
+    else:
+        results_dir = os.path.join(
+            results_path,
+            get_problem_type(ds_name),
+            build_dataset_name(ds_name, ds_args),
+            model_name,
+            loss_fn + "_" + optimizer,
+            f"epochs_{epochs}",
+        )
     os.makedirs(results_dir, exist_ok=True)
     # Ahora generamos los directorios para los diferentes resultados
     os.makedirs(os.path.join(results_dir, "checkpoints"), exist_ok=True)
@@ -251,6 +267,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset_num", required=False)
     parser.add_argument("--trainset_num", required=False)
     parser.add_argument("--dataset_channels", required=False)
+    parser.add_argument("--wavelets_mode", required=False)
 
     # parser.add_argument("results_path")
     # parser.add_argument("num_epochs")
@@ -261,6 +278,7 @@ if __name__ == "__main__":
     ds_name = args.dataset
     model_arch = args.architecture
     model_encoder = args.model_encoder
+    wavelets_mode = args.wavelets_mode
     epochs = args.epochs
     ds_args = {}
     if args.dataset_num:
@@ -269,6 +287,10 @@ if __name__ == "__main__":
         ds_args["trainset_num"] = args.trainset_num
     if args.dataset_channels:
         ds_args["dataset_channels"] = args.dataset_channels
+    if wavelets_mode == None:
+        ds_args["wavelets_mode"] = False
+    else:
+        ds_args["wavelets_mode"] = wavelets_mode
 
     # Use SLURM array environment variables to determine training and cross validation set number
     # If there is a command line argument we are using instead the environment variable (it takes precedence)
