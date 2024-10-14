@@ -4,5 +4,8 @@ logs_*
 logs
 results
 figures
+output_*
+results_*
 *.ckpt
+*.tar.gz
 .ipynb_*
