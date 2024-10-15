@@ -16,11 +16,15 @@ from lightning.pytorch.loggers import CSVLogger
 from skimage.io import imsave
 
 
-def get_model_args(ds_name):
+def get_model_args(ds_name, ds_args):
     if ds_name == "krestenitis":
         return {"in_channels": 1, "out_channels": 5}
     if ds_name == "cimat":
-        return {"in_channels": 1, "out_channels": 1, "wavelets_mode": False}
+        return {
+            "in_channels": 1,
+            "out_channels": 1,
+            "wavelets_mode": ds_args["wavelets_mode"],
+        }
     if ds_name == "chn6_cug":
         return {"in_channels": 3, "out_channels": 1}
     if ds_name == "sos":
@@ -328,7 +332,7 @@ if __name__ == "__main__":
     # Dataloaders
     dataloaders = get_dataloaders(home_dir, ds_name, ds_args)
     # Model
-    model = get_model(model_arch, get_model_args(ds_name), model_encoder)
+    model = get_model(model_arch, get_model_args(ds_name, ds_args), model_encoder)
     if model == None:
         raise Exception("Error en la configuración del modelo")
     # Training configuration

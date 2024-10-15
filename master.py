@@ -6,6 +6,7 @@ encoders = [
     "vgg13",
 ]
 datasets = ["cimat"]
+wavelets_modes = ["no", "1", "2", "3"]
 epochs = 30
 for model_arch in architectures:
     for model_encoder in encoders:
