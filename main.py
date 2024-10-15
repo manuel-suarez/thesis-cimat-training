@@ -92,6 +92,7 @@ def configure_results_path(
     if "wavelets_mode" in ds_args:
         results_dir = os.path.join(
             results_path,
+            model_name,
             get_problem_type(ds_name),
             build_dataset_name(ds_name, ds_args),
             (
@@ -99,16 +100,15 @@ def configure_results_path(
                 if ds_args["wavelets_mode"] == False
                 else f"wavelets_l{ds_args['wavelets_mode']}"
             ),
-            model_name,
             loss_fn + "_" + optimizer,
             f"epochs_{epochs}",
         )
     else:
         results_dir = os.path.join(
             results_path,
+            model_name,
             get_problem_type(ds_name),
             build_dataset_name(ds_name, ds_args),
-            model_name,
             loss_fn + "_" + optimizer,
             f"epochs_{epochs}",
         )
