@@ -294,7 +294,7 @@ if __name__ == "__main__":
     if wavelets_mode == None:
         ds_args["wavelets_mode"] = False
     else:
-        ds_args["wavelets_mode"] = wavelets_mode
+        ds_args["wavelets_mode"] = int(wavelets_mode)
 
     # Use SLURM array environment variables to determine training and cross validation set number
     # If there is a command line argument we are using instead the environment variable (it takes precedence)
