@@ -21,7 +21,7 @@ def get_model_args(ds_name, ds_args):
         return {"in_channels": 1, "out_channels": 5}
     if ds_name == "cimat":
         return {
-            "in_channels": 1,
+            "in_channels": 3 if ds_args["wavelets_mode"] == False else 1,
             "out_channels": 1,
             "wavelets_mode": ds_args["wavelets_mode"],
         }
