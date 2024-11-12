@@ -43,6 +43,11 @@ class TestUnetEncoders(TestBaseEncoders):
         super().__init__("unet", methodName)
 
 
+class TestUnetPlusPlusEncoders(TestBaseEncoders):
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__("unetplusplus", methodName)
+
+
 class TestLinknetEncoders(TestBaseEncoders):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__("linknet", methodName)
@@ -120,6 +125,11 @@ for encoder in encoders:
         create_test_for_encoder(encoder, wavelets_mode=False),
     )
     setattr(
+        TestUnetPlusPlusEncoders,
+        f"test_{encoder}_n",
+        create_test_for_encoder(encoder, wavelets_mode=False),
+    )
+    setattr(
         TestLinknetEncoders,
         f"test_{encoder}_n",
         create_test_for_encoder(encoder, wavelets_mode=False),
@@ -133,6 +143,11 @@ for encoder in encoders:
 
     setattr(
         TestUnetEncoders,
+        f"test_{encoder}_w1",
+        create_test_for_encoder(encoder, wavelets_mode=1),
+    )
+    setattr(
+        TestUnetPlusPlusEncoders,
         f"test_{encoder}_w1",
         create_test_for_encoder(encoder, wavelets_mode=1),
     )
@@ -152,6 +167,11 @@ for encoder in encoders:
         f"test_{encoder}_w2",
         create_test_for_encoder(encoder, wavelets_mode=2),
     )
+    setattr(
+        TestUnetPlusPlusEncoders,
+        f"test_{encoder}_w2",
+        create_test_for_encoder(encoder, wavelets_mode=2),
+    )
     # setattr(
     #    TestLinknetEncoders,
     #    f"test_{encoder}_w2",
@@ -165,6 +185,11 @@ for encoder in encoders:
 
     setattr(
         TestUnetEncoders,
+        f"test_{encoder}_w3",
+        create_test_for_encoder(encoder, wavelets_mode=3),
+    )
+    setattr(
+        TestUnetPlusPlusEncoders,
         f"test_{encoder}_w3",
         create_test_for_encoder(encoder, wavelets_mode=3),
     )
