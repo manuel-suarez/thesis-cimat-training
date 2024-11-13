@@ -58,6 +58,11 @@ class TestFPNEncoders(TestBaseEncoders):
         super().__init__("fpn", methodName)
 
 
+class TestDeepLabV3PlusEncoders(TestBaseEncoders):
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__("deeplabv3plus", methodName)
+
+
 class TestPSPNetEncoders(TestBaseEncoders):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__("pspnet", methodName)
@@ -136,6 +141,11 @@ for encoder in encoders:
     )
     setattr(
         TestFPNEncoders,
+        f"test_{encoder}_n",
+        create_test_for_encoder(encoder, wavelets_mode=False),
+    )
+    setattr(
+        TestDeepLabV3PlusEncoders,
         f"test_{encoder}_n",
         create_test_for_encoder(encoder, wavelets_mode=False),
     )
