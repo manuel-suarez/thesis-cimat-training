@@ -118,7 +118,7 @@ def create_test_for_encoder(encoder, wavelets_mode=False):
                 return
 
         except Exception as e:
-            self.fail(f"No se pudo crear el modelo: {e}")
+            self.fail(f"No se pudo crear el modelo, excepción: ({e})")
 
     return test_encoder
 
