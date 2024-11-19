@@ -68,6 +68,11 @@ class TestPSPNetEncoders(TestBaseEncoders):
         super().__init__("pspnet", methodName)
 
 
+class TestMANetEncoders(TestBaseEncoders):
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__("manet", methodName)
+
+
 def create_test_for_encoder(encoder, wavelets_mode=False):
     def test_encoder(self):
         print(f"Testing {encoder}")
@@ -146,6 +151,11 @@ for encoder in encoders:
     )
     setattr(
         TestDeepLabV3PlusEncoders,
+        f"test_{encoder}_n",
+        create_test_for_encoder(encoder, wavelets_mode=False),
+    )
+    setattr(
+        TestMANetEncoders,
         f"test_{encoder}_n",
         create_test_for_encoder(encoder, wavelets_mode=False),
     )
