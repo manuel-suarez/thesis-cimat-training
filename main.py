@@ -96,16 +96,23 @@ def configure_results_path(
     if "wavelets_mode" in ds_args:
         results_dir = os.path.join(
             results_path,
-            model_name,
-            get_problem_type(ds_name),
-            build_dataset_name(ds_name, ds_args),
+            model_arch,
+            model_encoder,
             (
-                "no_wavelets"
+                "wavelets_no"
                 if ds_args["wavelets_mode"] == False
-                else f"wavelets_l{ds_args['wavelets_mode']}"
+                else f"wavelets_{ds_args['wavelets_mode']}"
             ),
-            loss_fn + "_" + optimizer,
-            f"epochs_{epochs}",
+            "sos",
+            # get_problem_type(ds_name),
+            # build_dataset_name(ds_name, ds_args),
+            # (
+            #    "no_wavelets"
+            #    if ds_args["wavelets_mode"] == False
+            #    else f"wavelets_l{ds_args['wavelets_mode']}"
+            # ),
+            # loss_fn + "_" + optimizer,
+            # f"epochs_{epochs}",
         )
     else:
         results_dir = os.path.join(
@@ -157,7 +164,12 @@ def get_trainer_configuration(ds_name, model, epochs, results_dir):
     else:
         module = CimatModule(model, optimizer, loss_fn)
     trainer = L.Trainer(
-        max_epochs=int(epochs), devices=1, accelerator="gpu", logger=logger
+        max_epochs=int(epochs),
+        devices=2,
+        num_nodes=1,
+        accelerator="gpu",
+        strategy="ddp_find_unused_parameters_true",
+        logger=logger,
     )
     return module, trainer
 
