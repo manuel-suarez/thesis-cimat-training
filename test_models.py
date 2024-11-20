@@ -43,6 +43,11 @@ class TestUnetEncoders(TestBaseEncoders):
         super().__init__("unet", methodName)
 
 
+class TestUnetPlusPlusEncoders(TestBaseEncoders):
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__("unetplusplus", methodName)
+
+
 class TestLinknetEncoders(TestBaseEncoders):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__("linknet", methodName)
@@ -53,9 +58,19 @@ class TestFPNEncoders(TestBaseEncoders):
         super().__init__("fpn", methodName)
 
 
+class TestDeepLabV3PlusEncoders(TestBaseEncoders):
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__("deeplabv3plus", methodName)
+
+
 class TestPSPNetEncoders(TestBaseEncoders):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__("pspnet", methodName)
+
+
+class TestMANetEncoders(TestBaseEncoders):
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__("manet", methodName)
 
 
 def create_test_for_encoder(encoder, wavelets_mode=False):
@@ -108,7 +123,7 @@ def create_test_for_encoder(encoder, wavelets_mode=False):
                 return
 
         except Exception as e:
-            self.fail(f"No se pudo crear el modelo: {e}")
+            self.fail(f"No se pudo crear el modelo, excepción: ({e})")
 
     return test_encoder
 
@@ -116,6 +131,11 @@ def create_test_for_encoder(encoder, wavelets_mode=False):
 for encoder in encoders:
     setattr(
         TestUnetEncoders,
+        f"test_{encoder}_n",
+        create_test_for_encoder(encoder, wavelets_mode=False),
+    )
+    setattr(
+        TestUnetPlusPlusEncoders,
         f"test_{encoder}_n",
         create_test_for_encoder(encoder, wavelets_mode=False),
     )
@@ -129,10 +149,26 @@ for encoder in encoders:
         f"test_{encoder}_n",
         create_test_for_encoder(encoder, wavelets_mode=False),
     )
+    if "vgg" not in encoder:
+        setattr(
+            TestDeepLabV3PlusEncoders,
+            f"test_{encoder}_n",
+            create_test_for_encoder(encoder, wavelets_mode=False),
+        )
+    setattr(
+        TestMANetEncoders,
+        f"test_{encoder}_n",
+        create_test_for_encoder(encoder, wavelets_mode=False),
+    )
     # setattr(TestPSPNetEncoders, f"test_{encoder}", create_test_for_encoder(encoder))
 
     setattr(
         TestUnetEncoders,
+        f"test_{encoder}_w1",
+        create_test_for_encoder(encoder, wavelets_mode=1),
+    )
+    setattr(
+        TestUnetPlusPlusEncoders,
         f"test_{encoder}_w1",
         create_test_for_encoder(encoder, wavelets_mode=1),
     )
@@ -152,6 +188,11 @@ for encoder in encoders:
         f"test_{encoder}_w2",
         create_test_for_encoder(encoder, wavelets_mode=2),
     )
+    setattr(
+        TestUnetPlusPlusEncoders,
+        f"test_{encoder}_w2",
+        create_test_for_encoder(encoder, wavelets_mode=2),
+    )
     # setattr(
     #    TestLinknetEncoders,
     #    f"test_{encoder}_w2",
@@ -165,6 +206,11 @@ for encoder in encoders:
 
     setattr(
         TestUnetEncoders,
+        f"test_{encoder}_w3",
+        create_test_for_encoder(encoder, wavelets_mode=3),
+    )
+    setattr(
+        TestUnetPlusPlusEncoders,
         f"test_{encoder}_w3",
         create_test_for_encoder(encoder, wavelets_mode=3),
     )
