@@ -2,10 +2,10 @@ import os
 import subprocess
 
 architectures = ["unet"]
-encoders = ["vgg11", "resnet18"]
+encoders = ["vgg11", "vgg13", "resnet18", "resnet34"]
 datasets = ["cimat"]
-wavelets_modes = ["no", "1", "2", "3"]
-epochs = 1
+wavelets_modes = ["1", "2", "3", "no"]
+epochs = 30
 for model_arch in architectures:
     for model_encoder in encoders:
         for wavelets_mode in wavelets_modes:
