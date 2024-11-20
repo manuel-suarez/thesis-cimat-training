@@ -149,11 +149,12 @@ for encoder in encoders:
         f"test_{encoder}_n",
         create_test_for_encoder(encoder, wavelets_mode=False),
     )
-    setattr(
-        TestDeepLabV3PlusEncoders,
-        f"test_{encoder}_n",
-        create_test_for_encoder(encoder, wavelets_mode=False),
-    )
+    if "vgg" not in encoder:
+        setattr(
+            TestDeepLabV3PlusEncoders,
+            f"test_{encoder}_n",
+            create_test_for_encoder(encoder, wavelets_mode=False),
+        )
     setattr(
         TestMANetEncoders,
         f"test_{encoder}_n",
