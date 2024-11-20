@@ -5,6 +5,7 @@
 #SBATCH --time=0
 #SBATCH --mem=0
 #SBATCH --array=1
+#SBATCH --nodes=1
 
 # srun /home/est_posgrado_manuel.suarez/tools/anaconda3/envs/py3.9-pt/bin/python main.py 17 results 5
 dataset=$1
@@ -37,4 +38,5 @@ else
   fi
 fi
 # done
-
+# When training is done we need to create signal for main bash script
+touch dest/$model_arch/$model_encoder/wavelets_${wavelets_mode}/$dataset/output.txt
